@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}لوحة التقارير والتحليلات - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📊 لوحة التقارير والتحليلات</h2>
+    <div class="badge bg-info fs-6">مسؤول الموارد البشرية</div>
+</div>
+
+<!-- بطاقات التقارير الرئيسية -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-primary">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-clock fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">تقارير الحضور</h5>
+                <p class="card-text text-muted">ساعات العمل، الغياب، التأخير</p>
+                <a href="/reports/attendance" class="btn btn-primary">عرض التقارير</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-success">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-money-bill-wave fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">تقارير الرواتب</h5>
+                <p class="card-text text-muted">توزيع الرواتب، التكاليف</p>
+                <a href="/reports/payroll" class="btn btn-success">عرض التقارير</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-warning">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-calendar-alt fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title">تقارير الإجازات</h5>
+                <p class="card-text text-muted">استخدام الإجازات، الرصيد</p>
+                <a href="/reports/leaves" class="btn btn-warning">عرض التقارير</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-info">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-chart-line fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title">التنبؤات</h5>
+                <p class="card-text text-muted">تحليلات تنبؤية متقدمة</p>
+                <a href="/reports/predictions" class="btn btn-info">عرض التنبؤات</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- إحصائيات سريعة -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">📈 إحصائيات سريعة</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-primary" id="total-employees">-</h3>
+                            <p class="mb-0 text-muted">إجمالي الموظفين</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-success" id="present-today">-</h3>
+                            <p class="mb-0 text-muted">الحاضرون اليوم</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border-end">
+                            <h3 class="text-warning" id="pending-leaves">-</h3>
+                            <p class="mb-0 text-muted">طلبات إجازة معلقة</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info" id="monthly-payroll">-</h3>
+                        <p class="mb-0 text-muted">إجمالي الرواتب الشهرية</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- رسوم بيانية سريعة -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">📊 الحضور الأسبوعي</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyAttendanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">💰 توزيع الرواتب</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="salaryDistributionChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ميزات متقدمة -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">🔧 أدوات متقدمة</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <button class="btn btn-outline-primary" onclick="exportReports()">
+                                <i class="fas fa-download"></i> تصدير التقارير
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <button class="btn btn-outline-success" onclick="scheduleReport()">
+                                <i class="fas fa-calendar"></i> جدولة التقارير
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <button class="btn btn-outline-info" onclick="customAnalysis()">
+                                <i class="fas fa-cogs"></i> تحليل مخصص
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- تضمين Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تحميل الإحصائيات السريعة
+    loadQuickStats();
+    
+    // إنشاء الرسوم البيانية
+    createWeeklyAttendanceChart();
+    createSalaryDistributionChart();
+});
+
+function loadQuickStats() {
+    // هذه مجرد أمثلة - يمكن استبدالها بـ API calls حقيقية
+    document.getElementById('total-employees').textContent = '25';
+    document.getElementById('present-today').textContent = '22';
+    document.getElementById('pending-leaves').textContent = '3';
+    document.getElementById('monthly-payroll').textContent = '125,000 ر.س';
+}
+
+function createWeeklyAttendanceChart() {
+    const ctx = document.getElementById('weeklyAttendanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'],
+            datasets: [{
+                label: 'الحضور',
+                data: [22, 24, 23, 25, 21],
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 30
+                }
+            }
+        }
+    });
+}
+
+function createSalaryDistributionChart() {
+    const ctx = document.getElementById('salaryDistributionChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['الإدارة', 'المبيعات', 'التقنية', 'الموارد البشرية'],
+            datasets: [{
+                data: [35, 25, 30, 10],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function exportReports() {
+    alert('ميزة تصدير التقارير قيد التطوير');
+}
+
+function scheduleReport() {
+    alert('ميزة جدولة التقارير قيد التطوير');
+}
+
+function customAnalysis() {
+    alert('ميزة التحليل المخصص قيد التطوير');
+}
+</script>
+
+<!-- Font Awesome للأيقونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+

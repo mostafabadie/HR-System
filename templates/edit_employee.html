@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل بيانات الموظف | نظام الموارد البشرية</title>
+
+    <!-- Bootstrap 5 RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #0f766e;
+            --primary-light: #14b8a6;
+            --primary-soft: #ccfbf1;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .edit-card {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* رأس البطاقة */
+        .card-header {
+            background: linear-gradient(135deg, var(--dark), #1e293b);
+            padding: 2rem;
+            border-bottom: none;
+        }
+
+        .card-header h2 {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-header h2 i {
+            background: rgba(255,255,255,0.2);
+            padding: 0.75rem;
+            border-radius: 20px;
+        }
+
+        .employee-badge {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            display: inline-block;
+            margin-top: 0.75rem;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* جسم البطاقة */
+        .card-body {
+            padding: 2.5rem;
+        }
+
+        /* رسالة التنبيه */
+        .alert-message {
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 1.25rem 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1rem;
+        }
+
+        .alert-message i {
+            font-size: 1.5rem;
+            color: #d97706;
+        }
+
+        /* قسم البيانات الحالية */
+        .current-data {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 1.75rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--dark);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+
+        .data-item {
+            background: white;
+            padding: 1.25rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .data-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-light);
+            box-shadow: 0 10px 20px -10px rgba(15, 118, 110, 0.2);
+        }
+
+        .data-label {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .data-label i {
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .data-value {
+            color: var(--dark);
+            font-weight: 700;
+            font-size: 1.25rem;
+            word-break: break-word;
+            padding-right: 1.5rem;
+        }
+
+        .data-value i {
+            color: #10b981;
+            margin-left: 0.5rem;
+            font-size: 1rem;
+        }
+
+        /* قسم النموذج */
+        .form-section {
+            margin-top: 2rem;
+        }
+
+        .form-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--dark);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section-title i {
+            color: var(--primary);
+            background: var(--primary-soft);
+            padding: 0.5rem;
+            border-radius: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label i {
+            color: var(--primary);
+            width: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 18px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+            outline: none;
+        }
+
+        .form-control.changed {
+            border-color: var(--warning);
+            background-color: var(--warning-light);
+        }
+
+        /* تلميح القيمة القديمة */
+        .old-value-hint {
+            margin-top: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: #f8fafc;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px dashed var(--border);
+        }
+
+        .old-value-hint i {
+            color: var(--primary);
+        }
+
+        .old-value-badge {
+            background: white;
+            color: var(--dark);
+            font-weight: 600;
+            padding: 0.25rem 1rem;
+            border-radius: 50px;
+            border: 1px solid var(--border);
+            margin-right: 0.5rem;
+        }
+
+        /* الأزرار */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .btn-save {
+            flex: 2;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 18px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(15, 118, 110, 0.3);
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: white;
+            color: var(--gray);
+            border: 2px solid var(--border);
+            padding: 1rem 2rem;
+            border-radius: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #f8fafc;
+            border-color: var(--gray);
+            color: var(--dark);
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .card-body { padding: 1.5rem; }
+            .data-grid { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                
+                <div class="edit-card">
+                    
+                    <!-- رأس البطاقة -->
+                    <div class="card-header">
+                        <h2>
+                            <i class="fas fa-user-edit"></i>
+                            تعديل بيانات الموظف
+                        </h2>
+                        {% if employee and employee.id %}
+                        <div class="employee-badge">
+                            <i class="fas fa-id-card me-2"></i>
+                            رقم الموظف: #{{ employee.id }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- جسم البطاقة -->
+                    <div class="card-body">
+                        
+                        <!-- رسالة التنبيه -->
+                        <div class="alert-message">
+                            <i class="fas fa-info-circle"></i>
+                            <span>أنت على وشك تعديل بيانات الموظف. البيانات الحالية معروضة بالأسفل كمرجع.</span>
+                        </div>
+                        
+                        <!-- قسم البيانات الحالية -->
+                        <div class="current-data">
+                            <div class="section-title">
+                                <i class="fas fa-database"></i>
+                                البيانات الحالية (قبل التعديل)
+                            </div>
+                            
+                            <div class="data-grid">
+                                <!-- الاسم -->
+                                <div class="data-item">
+                                    <div class="data-label">
+                                        <i class="fas fa-user"></i>
+                                        الاسم
+                                    </div>
+                                    <div class="data-value">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% if employee and employee.name %}
+                                            {{ employee.name }}
+                                        {% else %}
+                                            <span style="color: var(--gray); font-weight: normal;">غير محدد</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- القسم -->
+                                <div class="data-item">
+                                    <div class="data-label">
+                                        <i class="fas fa-building"></i>
+                                        القسم
+                                    </div>
+                                    <div class="data-value">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% if employee and employee.department %}
+                                            {{ employee.department }}
+                                        {% else %}
+                                            <span style="color: var(--gray); font-weight: normal;">غير محدد</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- الوظيفة -->
+                                <div class="data-item">
+                                    <div class="data-label">
+                                        <i class="fas fa-briefcase"></i>
+                                        الوظيفة
+                                    </div>
+                                    <div class="data-value">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% if employee and employee.position %}
+                                            {{ employee.position }}
+                                        {% else %}
+                                            <span style="color: var(--gray); font-weight: normal;">غير محدد</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- الراتب -->
+                                <div class="data-item">
+                                    <div class="data-label">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        الراتب
+                                    </div>
+                                    <div class="data-value">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% if employee and employee.salary %}
+                                            {{ employee.salary }} ج.م
+                                        {% else %}
+                                            0 ج.م
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- نموذج التعديل -->
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="fas fa-pen-fancy"></i>
+                                إدخال البيانات الجديدة
+                            </div>
+                            
+                            <form method="POST" id="editForm" onsubmit="return confirmEdit()">
+                                
+                                <!-- حقل الاسم -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-user-tag"></i>
+                                        اسم الموظف
+                                    </label>
+                                    <input type="text" 
+                                           name="name" 
+                                           class="form-control" 
+                                           id="nameInput"
+                                           value="{{ employee.name if employee and employee.name else '' }}" 
+                                           required
+                                           placeholder="أدخل الاسم الكامل">
+                                    <div class="old-value-hint">
+                                        <i class="fas fa-history"></i>
+                                        <span>القيمة الحالية:</span>
+                                        <span class="old-value-badge">
+                                            {% if employee and employee.name %}
+                                                {{ employee.name }}
+                                            {% else %}
+                                                غير محدد
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- حقل القسم -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-sitemap"></i>
+                                        القسم
+                                    </label>
+                                    <input type="text" 
+                                           name="department" 
+                                           class="form-control" 
+                                           id="deptInput"
+                                           value="{{ employee.department if employee and employee.department else '' }}" 
+                                           required
+                                           placeholder="أدخل اسم القسم">
+                                    <div class="old-value-hint">
+                                        <i class="fas fa-history"></i>
+                                        <span>القيمة الحالية:</span>
+                                        <span class="old-value-badge">
+                                            {% if employee and employee.department %}
+                                                {{ employee.department }}
+                                            {% else %}
+                                                غير محدد
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- حقل الوظيفة -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-tasks"></i>
+                                        الوظيفة
+                                    </label>
+                                    <input type="text" 
+                                           name="position" 
+                                           class="form-control" 
+                                           id="posInput"
+                                           value="{{ employee.position if employee and employee.position else '' }}" 
+                                           required
+                                           placeholder="أدخل المسمى الوظيفي">
+                                    <div class="old-value-hint">
+                                        <i class="fas fa-history"></i>
+                                        <span>القيمة الحالية:</span>
+                                        <span class="old-value-badge">
+                                            {% if employee and employee.position %}
+                                                {{ employee.position }}
+                                            {% else %}
+                                                غير محدد
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- حقل الراتب -->
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-coins"></i>
+                                        الراتب
+                                    </label>
+                                    <input type="number" 
+                                           step="0.01" 
+                                           name="salary" 
+                                           class="form-control" 
+                                           id="salaryInput"
+                                           value="{{ employee.salary if employee and employee.salary else 0 }}" 
+                                           required
+                                           placeholder="أدخل قيمة الراتب">
+                                    <div class="old-value-hint">
+                                        <i class="fas fa-history"></i>
+                                        <span>القيمة الحالية:</span>
+                                        <span class="old-value-badge">
+                                            {% if employee and employee.salary %}
+                                                {{ employee.salary }} ج.م
+                                            {% else %}
+                                                0 ج.م
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- الأزرار -->
+                                <div class="action-buttons">
+                                    <button type="submit" class="btn-save">
+                                        <i class="fas fa-save fa-lg"></i>
+                                        حفظ التغييرات
+                                    </button>
+                                    
+                                    <a href="{{ url_for('employees') }}" class="btn-cancel">
+                                        <i class="fas fa-times fa-lg"></i>
+                                        إلغاء
+                                    </a>
+                                </div>
+                                
+                            </form>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // دالة تأكيد التعديل
+        function confirmEdit() {
+            {% if employee %}
+            // الحصول على القيم القديمة
+            const oldName = "{{ employee.name if employee.name else '' }}";
+            const oldDept = "{{ employee.department if employee.department else '' }}";
+            const oldPos = "{{ employee.position if employee.position else '' }}";
+            const oldSalary = "{{ employee.salary if employee.salary else '0' }}";
+            
+            // الحصول على القيم الجديدة
+            const newName = document.getElementById('nameInput').value.trim();
+            const newDept = document.getElementById('deptInput').value.trim();
+            const newPos = document.getElementById('posInput').value.trim();
+            const newSalary = document.getElementById('salaryInput').value;
+            
+            // قائمة التغييرات
+            let changes = [];
+            
+            if (newName !== oldName) {
+                changes.push(`• الاسم: "${oldName || 'غير محدد'}" → "${newName || 'غير محدد'}"`);
+            }
+            if (newDept !== oldDept) {
+                changes.push(`• القسم: "${oldDept || 'غير محدد'}" → "${newDept || 'غير محدد'}"`);
+            }
+            if (newPos !== oldPos) {
+                changes.push(`• الوظيفة: "${oldPos || 'غير محدد'}" → "${newPos || 'غير محدد'}"`);
+            }
+            if (newSalary !== oldSalary) {
+                changes.push(`• الراتب: ${oldSalary || 0} ج.م → ${newSalary} ج.م`);
+            }
+            
+            // إذا لم يكن هناك تغييرات
+            if (changes.length === 0) {
+                alert('⚠️ لم تقم بإجراء أي تغييرات على البيانات');
+                return false;
+            }
+            
+            // رسالة التأكيد
+            const message = '📋 هل أنت متأكد من حفظ التغييرات التالية؟\n\n' + 
+                           changes.join('\n') + 
+                           '\n\n✅ اضغط موافق للحفظ\n❌ اضغط إلغاء للمراجعة';
+            
+            return confirm(message);
+            {% else %}
+            return true;
+            {% endif %}
+        }
+        
+        // تمييز الحقول المتغيرة
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.form-control');
+            
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    const formGroup = this.closest('.form-group');
+                    const oldValueBadge = formGroup.querySelector('.old-value-badge');
+                    
+                    if (oldValueBadge) {
+                        let oldValue = oldValueBadge.textContent.trim();
+                        // إزالة "ج.م" من الراتب للمقارنة
+                        oldValue = oldValue.replace(' ج.م', '').replace('غير محدد', '').trim();
+                        
+                        if (this.value !== oldValue) {
+                            this.classList.add('changed');
+                        } else {
+                            this.classList.remove('changed');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    
+</body>
+</html>

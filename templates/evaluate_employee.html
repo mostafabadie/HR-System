@@ -1,0 +1,470 @@
+{% extends "base.html" %}
+
+{% block title %}تقييم الموظف - {{ employee.name }} - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .page-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .page-header p {
+        margin: 0.25rem 0 0;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    .page-header .btn {
+        border-radius: 999px;
+    }
+    .info-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+    .info-card-header-primary {
+        background: linear-gradient(135deg, #0f766e, #0d9488);
+        color: #fff;
+        padding: 0.75rem 1rem;
+        border-radius: 16px 16px 0 0;
+    }
+    .info-card-header-info {
+        background: #0f172a;
+        color: #e5e7eb;
+        padding: 0.75rem 1rem;
+        border-radius: 16px 16px 0 0;
+    }
+    .info-card-body {
+        padding: 1rem 1.1rem 0.9rem;
+    }
+    .criteria-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+    .criteria-header {
+        padding: 0.9rem 1.2rem;
+        background: #f59e0b1a;
+        border-bottom: 1px solid #facc1511;
+    }
+    .criteria-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #92400e;
+    }
+    .criteria-body {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+    .criteria-block {
+        background: #f9fafb;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        padding: 0.9rem 0.9rem 0.8rem;
+        margin-bottom: 0.9rem;
+    }
+    .criteria-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #0f172a;
+    }
+    .criteria-weight {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    .section-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+    .section-header-success {
+        padding: 0.9rem 1.2rem;
+        background: #16a34a1a;
+        border-bottom: 1px solid #22c55e33;
+        color: #14532d;
+        font-weight: 600;
+    }
+    .section-body {
+        padding: 1.2rem 1.25rem 0.9rem;
+    }
+    .form-select,
+    .form-control {
+        border-radius: 10px;
+    }
+    .actions-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+    .actions-card .btn {
+        border-radius: 999px;
+        min-width: 190px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1>📝 تقييم الموظف: {{ employee.name }}</h1>
+        <p>تقييم أداء الموظف خلال الفترة التقييمية المحددة بناءً على المعايير المعتمدة.</p>
+    </div>
+    <a href="/performance/evaluate?period_id={{ period.id }}" class="btn btn-outline-secondary">
+        العودة لقائمة التقييمات
+    </a>
+</div>
+
+<!-- معلومات الموظف والفترة -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="info-card">
+            <div class="info-card-header-primary">
+                <h6 class="mb-0">👤 معلومات الموظف</h6>
+            </div>
+            <div class="info-card-body">
+                <p><strong>الاسم:</strong> {{ employee.name }}</p>
+                <p><strong>المنصب:</strong> {{ employee.position }}</p>
+                <p><strong>الراتب:</strong> {{ employee.salary }} ر.س</p>
+                <p class="mb-0"><strong>تاريخ التوظيف:</strong> {{ employee.hire_date }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="info-card">
+            <div class="info-card-header-info">
+                <h6 class="mb-0">📅 الفترة التقييمية</h6>
+            </div>
+            <div class="info-card-body">
+                <p><strong>اسم الفترة:</strong> {{ period.name }}</p>
+                <p><strong>السنة:</strong> {{ period.year }}</p>
+                <p><strong>الربع:</strong> الربع {{ period.quarter }}</p>
+                <p class="mb-0"><strong>المدة:</strong> {{ period.start_date }} إلى {{ period.end_date }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نموذج التقييم -->
+<form method="POST" action="/performance/evaluate/{{ employee.id }}/submit">
+    <input type="hidden" name="period_id" value="{{ period.id }}">
+    
+    <!-- معايير التقييم -->
+    <div class="criteria-card mb-4">
+        <div class="criteria-header">
+            <h5 class="mb-0">⭐ معايير التقييم</h5>
+        </div>
+        <div class="criteria-body">
+            {% for criterion in criteria %}
+            <div class="row criteria-block">
+                <div class="col-md-12 mb-3">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center">
+                        <div class="criteria-title">{{ criterion.name }}</div>
+                        <div class="criteria-weight">الوزن: {{ (criterion.weight * 100)|int }}%</div>
+                    </div>
+                    <p class="text-muted mb-2">{{ criterion.description }}</p>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="criteria_{{ criterion.id }}_rating" class="form-label">التقييم</label>
+                    <select class="form-select" id="criteria_{{ criterion.id }}_rating" 
+                            name="criteria_{{ criterion.id }}_rating" required>
+                        <option value="">اختر التقييم</option>
+                        <option value="ممتاز" 
+                                {% if existing_evaluation and existing_evaluation.details %}
+                                    {% for detail in existing_evaluation.details %}
+                                        {% if detail.criteria_id == criterion.id and detail.rating == 'ممتاز' %}selected{% endif %}
+                                    {% endfor %}
+                                {% endif %}>
+                            ممتاز (5 نقاط)
+                        </option>
+                        <option value="جيد جداً"
+                                {% if existing_evaluation and existing_evaluation.details %}
+                                    {% for detail in existing_evaluation.details %}
+                                        {% if detail.criteria_id == criterion.id and detail.rating == 'جيد جداً' %}selected{% endif %}
+                                    {% endfor %}
+                                {% endif %}>
+                            جيد جداً (4 نقاط)
+                        </option>
+                        <option value="جيد"
+                                {% if existing_evaluation and existing_evaluation.details %}
+                                    {% for detail in existing_evaluation.details %}
+                                        {% if detail.criteria_id == criterion.id and detail.rating == 'جيد' %}selected{% endif %}
+                                    {% endfor %}
+                                {% endif %}>
+                            جيد (3 نقاط)
+                        </option>
+                        <option value="مقبول"
+                                {% if existing_evaluation and existing_evaluation.details %}
+                                    {% for detail in existing_evaluation.details %}
+                                        {% if detail.criteria_id == criterion.id and detail.rating == 'مقبول' %}selected{% endif %}
+                                    {% endfor %}
+                                {% endif %}>
+                            مقبول (2 نقطة)
+                        </option>
+                        <option value="ضعيف"
+                                {% if existing_evaluation and existing_evaluation.details %}
+                                    {% for detail in existing_evaluation.details %}
+                                        {% if detail.criteria_id == criterion.id and detail.rating == 'ضعيف' %}selected{% endif %}
+                                    {% endfor %}
+                                {% endif %}>
+                            ضعيف (1 نقطة)
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="criteria_{{ criterion.id }}_comments" class="form-label">تعليقات (اختياري)</label>
+                    <textarea class="form-control" id="criteria_{{ criterion.id }}_comments" 
+                              name="criteria_{{ criterion.id }}_comments" rows="3" 
+                              placeholder="أضف تعليقات حول هذا المعيار...">{% if existing_evaluation and existing_evaluation.details %}{% for detail in existing_evaluation.details %}{% if detail.criteria_id == criterion.id %}{{ detail.comments }}{% endif %}{% endfor %}{% endif %}</textarea>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- التقييم العام والتعليقات -->
+    <div class="section-card mb-4">
+        <div class="section-header-success">
+            📊 التقييم العام والتعليقات
+        </div>
+        <div class="section-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="overall_rating" class="form-label">التقييم العام (اختياري - سيتم حسابه تلقائياً)</label>
+                    <select class="form-select" id="overall_rating" name="overall_rating">
+                        <option value="">حساب تلقائي من المعايير</option>
+                        <option value="ممتاز" 
+                                {% if existing_evaluation and existing_evaluation.evaluation.overall_rating == 'ممتاز' %}selected{% endif %}>
+                            ممتاز
+                        </option>
+                        <option value="جيد جداً"
+                                {% if existing_evaluation and existing_evaluation.evaluation.overall_rating == 'جيد جداً' %}selected{% endif %}>
+                            جيد جداً
+                        </option>
+                        <option value="جيد"
+                                {% if existing_evaluation and existing_evaluation.evaluation.overall_rating == 'جيد' %}selected{% endif %}>
+                            جيد
+                        </option>
+                        <option value="مقبول"
+                                {% if existing_evaluation and existing_evaluation.evaluation.overall_rating == 'مقبول' %}selected{% endif %}>
+                            مقبول
+                        </option>
+                        <option value="ضعيف"
+                                {% if existing_evaluation and existing_evaluation.evaluation.overall_rating == 'ضعيف' %}selected{% endif %}>
+                            ضعيف
+                        </option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="strengths" class="form-label">نقاط القوة</label>
+                    <textarea class="form-control" id="strengths" name="strengths" rows="4" 
+                              placeholder="اذكر نقاط القوة للموظف...">{% if existing_evaluation %}{{ existing_evaluation.evaluation.strengths }}{% endif %}</textarea>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="areas_for_improvement" class="form-label">مجالات التحسين</label>
+                    <textarea class="form-control" id="areas_for_improvement" name="areas_for_improvement" rows="4" 
+                              placeholder="اذكر المجالات التي تحتاج إلى تحسين...">{% if existing_evaluation %}{{ existing_evaluation.evaluation.areas_for_improvement }}{% endif %}</textarea>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="goals_next_period" class="form-label">أهداف الفترة القادمة</label>
+                    <textarea class="form-control" id="goals_next_period" name="goals_next_period" rows="4" 
+                              placeholder="حدد الأهداف للفترة التقييمية القادمة...">{% if existing_evaluation %}{{ existing_evaluation.evaluation.goals_next_period }}{% endif %}</textarea>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="comments" class="form-label">تعليقات إضافية</label>
+                    <textarea class="form-control" id="comments" name="comments" rows="4" 
+                              placeholder="أي تعليقات إضافية...">{% if existing_evaluation %}{{ existing_evaluation.evaluation.comments }}{% endif %}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- أزرار الحفظ -->
+    <div class="actions-card">
+        <div class="card-body text-center">
+            <div class="btn-group" role="group">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fas fa-save"></i> حفظ كمسودة
+                </button>
+                <button type="submit" name="complete_evaluation" value="1" class="btn btn-success btn-lg">
+                    <i class="fas fa-check-circle"></i> حفظ وإكمال التقييم
+                </button>
+            </div>
+            <div class="mt-3">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i>
+                    يمكنك حفظ التقييم كمسودة للعودة إليه لاحقاً، أو إكماله نهائياً
+                </small>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- معلومات إضافية -->
+{% if existing_evaluation %}
+<div class="alert alert-info mt-4">
+    <h6><i class="fas fa-info-circle"></i> معلومات التقييم الحالي</h6>
+    <p class="mb-1"><strong>تاريخ الإنشاء:</strong> {{ existing_evaluation.evaluation.created_date }}</p>
+    <p class="mb-1"><strong>الحالة:</strong> 
+        {% if existing_evaluation.evaluation.status == 'completed' %}
+            <span class="badge bg-success">مكتمل</span>
+        {% else %}
+            <span class="badge bg-warning">مسودة</span>
+        {% endif %}
+    </p>
+    {% if existing_evaluation.evaluation.completed_date %}
+    <p class="mb-0"><strong>تاريخ الإكمال:</strong> {{ existing_evaluation.evaluation.completed_date }}</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Font Awesome للأيقونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.border {
+    border-color: #dee2e6 !important;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.form-select, .form-control {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn-group .btn {
+    margin: 0 5px;
+}
+
+.alert {
+    border-radius: 10px;
+}
+
+textarea {
+    resize: vertical;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تحديث التقييم العام تلقائياً عند تغيير المعايير
+    const criteriaSelects = document.querySelectorAll('select[name^="criteria_"][name$="_rating"]');
+    const overallRatingSelect = document.getElementById('overall_rating');
+    
+    function updateOverallRating() {
+        if (overallRatingSelect.value !== '') return; // لا تحديث إذا كان المستخدم اختار تقييماً يدوياً
+        
+        let totalScore = 0;
+        let totalWeight = 0;
+        let hasAllRatings = true;
+        
+        criteriaSelects.forEach(select => {
+            if (select.value === '') {
+                hasAllRatings = false;
+                return;
+            }
+            
+            const score = getRatingScore(select.value);
+            const weight = getCriteriaWeight(select.name);
+            
+            totalScore += score * weight;
+            totalWeight += weight;
+        });
+        
+        if (hasAllRatings && totalWeight > 0) {
+            const overallScore = totalScore / totalWeight;
+            const overallRating = scoreToRating(overallScore);
+            
+            // عرض التقييم المحسوب في placeholder أو hint
+            const hint = document.getElementById('overall-rating-hint');
+            if (hint) {
+                hint.textContent = `التقييم المحسوب: ${overallRating} (${overallScore.toFixed(1)} نقطة)`;
+            }
+        }
+    }
+    
+    function getRatingScore(rating) {
+        const scores = {
+            'ممتاز': 5.0,
+            'جيد جداً': 4.0,
+            'جيد': 3.0,
+            'مقبول': 2.0,
+            'ضعيف': 1.0
+        };
+        return scores[rating] || 0;
+    }
+    
+    function getCriteriaWeight(selectName) {
+        // استخراج ID المعيار من اسم الحقل
+        const criteriaId = selectName.match(/criteria_(\d+)_rating/)[1];
+        
+        // أوزان المعايير (يمكن تحسينها بجلبها من الخادم)
+        const weights = {
+            '1': 0.7, // الأداء الوظيفي
+            '2': 0.3  // الالتزام بالمواعيد
+        };
+        
+        return weights[criteriaId] || 1.0;
+    }
+    
+    function scoreToRating(score) {
+        if (score >= 4.5) return 'ممتاز';
+        if (score >= 3.5) return 'جيد جداً';
+        if (score >= 2.5) return 'جيد';
+        if (score >= 1.5) return 'مقبول';
+        return 'ضعيف';
+    }
+    
+    // إضافة مستمعي الأحداث
+    criteriaSelects.forEach(select => {
+        select.addEventListener('change', updateOverallRating);
+    });
+    
+    // إضافة hint للتقييم العام
+    const overallRatingContainer = overallRatingSelect.parentElement;
+    const hint = document.createElement('small');
+    hint.id = 'overall-rating-hint';
+    hint.className = 'text-muted';
+    overallRatingContainer.appendChild(hint);
+    
+    // تحديث أولي
+    updateOverallRating();
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}طلب إجازة - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">📝 طلب إجازة جديد</h4>
+            </div>
+            <div class="card-body">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" id="leaveForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="employee_id" class="form-label">الموظف</label>
+                            <select class="form-select" id="employee_id" name="employee_id" required>
+                                <option value="">اختر الموظف</option>
+                                {% for employee in employees %}
+                                    <option value="{{ employee.id }}">{{ employee.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="leave_type_id" class="form-label">نوع الإجازة</label>
+                            <select class="form-select" id="leave_type_id" name="leave_type_id" required>
+                                <option value="">اختر نوع الإجازة</option>
+                                {% for leave_type in leave_types %}
+                                    <option value="{{ leave_type.id }}" data-max-days="{{ leave_type.max_days }}">
+                                        {{ leave_type.name }} (الحد الأقصى: {{ leave_type.max_days }} يوم)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">تاريخ البداية</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">تاريخ النهاية</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="calculated_days" class="form-label">عدد الأيام المحسوبة</label>
+                        <input type="text" class="form-control" id="calculated_days" readonly>
+                        <small class="form-text text-muted">سيتم حساب الأيام تلقائياً (باستثناء عطلة نهاية الأسبوع)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <div id="balance_info" class="alert alert-info" style="display: none;">
+                            <strong>رصيد الإجازة:</strong>
+                            <span id="balance_text"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">سبب الإجازة</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="اكتب سبب طلب الإجازة..."></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary me-md-2" onclick="window.history.back()">إلغاء</button>
+                        <button type="submit" class="btn btn-primary">تقديم الطلب</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const employeeSelect = document.getElementById('employee_id');
+    const leaveTypeSelect = document.getElementById('leave_type_id');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const calculatedDaysInput = document.getElementById('calculated_days');
+    const balanceInfo = document.getElementById('balance_info');
+    const balanceText = document.getElementById('balance_text');
+
+    // تحديث رصيد الإجازة عند تغيير الموظف أو نوع الإجازة
+    function updateLeaveBalance() {
+        const employeeId = employeeSelect.value;
+        const leaveTypeId = leaveTypeSelect.value;
+        
+        if (employeeId && leaveTypeId) {
+            fetch(`/api/leave_balance/${employeeId}/${leaveTypeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        balanceInfo.style.display = 'none';
+                    } else {
+                        balanceText.textContent = `المتبقي: ${data.remaining_days} يوم، المستخدم: ${data.used_days} يوم، المخصص: ${data.allocated_days} يوم`;
+                        balanceInfo.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('خطأ في جلب رصيد الإجازة:', error);
+                    balanceInfo.style.display = 'none';
+                });
+        } else {
+            balanceInfo.style.display = 'none';
+        }
+    }
+
+    // حساب عدد الأيام
+    function calculateDays() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (startDate && endDate && startDate <= endDate) {
+            let days = 0;
+            let currentDate = new Date(startDate);
+            
+            while (currentDate <= endDate) {
+                // تجاهل السبت (6) والأحد (0)
+                if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                    days++;
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            calculatedDaysInput.value = days + ' يوم';
+        } else {
+            calculatedDaysInput.value = '';
+        }
+    }
+
+    // إضافة مستمعي الأحداث
+    employeeSelect.addEventListener('change', updateLeaveBalance);
+    leaveTypeSelect.addEventListener('change', updateLeaveBalance);
+    startDateInput.addEventListener('change', calculateDays);
+    endDateInput.addEventListener('change', calculateDays);
+
+    // تعيين التاريخ الأدنى لليوم الحالي
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.min = today;
+    endDateInput.min = today;
+
+    // تحديث التاريخ الأدنى لتاريخ النهاية عند تغيير تاريخ البداية
+    startDateInput.addEventListener('change', function() {
+        endDateInput.min = this.value;
+        calculateDays();
+    });
+});
+</script>
+{% endblock %}
+

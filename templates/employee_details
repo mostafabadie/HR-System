@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>تفاصيل الموظف</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+</head>
+<body class="bg-light p-4">
+    <div class="container">
+        <h2 class="text-center mb-4">تفاصيل الموظف</h2>
+
+        {% if employee %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p><strong>الاسم:</strong> {{ employee.name }}</p>
+                    <p><strong>القسم:</strong> {{ employee.department }}</p>
+                    <p><strong>الوظيفة:</strong> {{ employee.position }}</p>
+                    <p><strong>الراتب:</strong> {{ employee.salary }}</p>
+                </div>
+            </div>
+            
+          
+        
+            <h4 class="mb-3">سجل الحضور</h4>
+            {% if attendance %}
+                <table class="table table-bordered table-striped bg-white">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>وقت الدخول</th>
+                            <th>وقت الخروج</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in attendance %}
+                            <tr>
+                                <td>{{ a.date }}</td>
+                                <td>{{ a.check_in or '---' }}</td>
+                                <td>{{ a.check_out or '---' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>لا يوجد سجل حضور لهذا الموظف.</p>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-danger">
+                الموظف غير موجود.
+            </div>
+        {% endif %}
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('employees') }}" class="btn btn-secondary">رجوع</a>
+        </div>
+    </div>
+</body>
+</html>

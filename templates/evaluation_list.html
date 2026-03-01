@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}قائمة التقييمات - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .page-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .page-header p {
+        margin: 0.25rem 0 0;
+        font-size: 0.9rem;
+        color: #64748b;
+    }
+    .filter-card,
+    .table-card {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+    .filter-card-header {
+        padding: 0.9rem 1.25rem;
+        background: #0f172a;
+        color: #e5e7eb;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+    .filter-card-body {
+        padding: 1.25rem 1.25rem 0.75rem;
+    }
+    .stats-card {
+        border-radius: 14px;
+        padding: 1rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+    }
+    .stats-card .label {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin: 0;
+    }
+    .stats-card .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .stats-completed {
+        background: #ecfdf3;
+        border-color: #bbf7d0;
+    }
+    .stats-draft {
+        background: #fffbeb;
+        border-color: #fed7aa;
+    }
+    .stats-missing {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+    .table-card .table thead th {
+        background: #0f172a;
+        color: #e5e7eb;
+        font-size: 0.85rem;
+        border-bottom: none;
+    }
+    .table-card .table tbody td {
+        vertical-align: middle;
+        font-size: 0.9rem;
+    }
+    .badge {
+        font-size: 0.8rem;
+    }
+    .btn-group .btn {
+        margin-inline-start: 2px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1>📋 قائمة التقييمات</h1>
+        <p>إدارة التقييمات حسب الفترات التقييمية، ومتابعة حالة كل موظف.</p>
+    </div>
+    <a href="/performance" class="btn btn-outline-secondary">
+        العودة للوحة الأداء
+    </a>
+</div>
+
+<!-- فلتر الفترة التقييمية -->
+<div class="filter-card mb-4">
+    <div class="filter-card-header">
+        🔍 اختيار الفترة التقييمية
+    </div>
+    <div class="filter-card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <label for="period_id" class="form-label">الفترة التقييمية</label>
+                <select class="form-select" id="period_id" name="period_id" onchange="this.form.submit()">
+                    <option value="">اختر الفترة التقييمية</option>
+                    {% for period in periods %}
+                    <option value="{{ period.id }}" 
+                            {% if selected_period_id == period.id %}selected{% endif %}>
+                        {{ period.name }} ({{ period.year }} - الربع {{ period.quarter }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if selected_period_id %}
+<!-- إحصائيات سريعة -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="stats-card stats-completed">
+            <div>
+                <p class="label">تقييمات مكتملة</p>
+                <p class="value">
+                    {{ evaluations|selectattr('status', 'equalto', 'completed')|list|length }}
+                </p>
+            </div>
+            <span class="badge bg-success">مكتمل</span>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stats-card stats-draft">
+            <div>
+                <p class="label">تقييمات مسودة / معلقة</p>
+                <p class="value">
+                    {{ evaluations|selectattr('status', 'equalto', 'draft')|list|length }}
+                </p>
+            </div>
+            <span class="badge bg-warning text-dark">مسودة</span>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stats-card stats-missing">
+            <div>
+                <p class="label">موظفون بدون تقييم</p>
+                <p class="value">
+                    {{ total_employees_without_eval or 0 }}
+                </p>
+            </div>
+            <span class="badge bg-danger">غير مقيّمين</span>
+        </div>
+    </div>
+</div>
+
+<!-- الموظفون بدون تقييم -->
+{% if employees_without_eval %}
+<div class="table-card mb-4">
+    <div class="p-3 border-bottom bg-danger text-white">
+        <strong>👥 موظفون يحتاجون إلى تقييم</strong>
+    </div>
+    <div class="p-3">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>اسم الموظف</th>
+                        <th>المنصب</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees_without_eval %}
+                    <tr>
+                        <td><strong>{{ employee.name }}</strong></td>
+                        <td>{{ employee.position }}</td>
+                        <td>
+                            <a href="/performance/evaluate/{{ employee.id }}?period_id={{ selected_period_id }}" 
+                               class="btn btn-sm btn-primary">
+                                إنشاء تقييم
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if pages and pages > 1 %}
+        <div class="d-flex justify-content-center mt-3">
+            <nav aria-label="التنقل بين صفحات الموظفين غير المقيّمين">
+                <ul class="pagination mb-0">
+                    <!-- السابق -->
+                    <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+                        <a class="page-link"
+                           href="{% if page > 1 %}{{ url_for('evaluation_list', period_id=selected_period_id, page=page-1) }}{% else %}#{% endif %}">
+                            السابق
+                        </a>
+                    </li>
+
+                    <!-- الصفحة 1 دائمًا -->
+                    <li class="page-item {% if page == 1 %}active{% endif %}">
+                        <a class="page-link"
+                           href="{{ url_for('evaluation_list', period_id=selected_period_id, page=1) }}">1</a>
+                    </li>
+
+                    <!-- نقاط قبل الجزء الأوسط إذا كنا بعد صفحة 4 -->
+                    {% if page > 4 %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+
+                    <!-- نافذة حول الصفحة الحالية (من page-2 إلى page+2) -->
+                    {% for p in range(page-2, page+3) %}
+                        {% if 1 < p < pages %}
+                            <li class="page-item {% if p == page %}active{% endif %}">
+                                <a class="page-link"
+                                   href="{{ url_for('evaluation_list', period_id=selected_period_id, page=p) }}">{{ p }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    <!-- نقاط قبل الصفحة الأخيرة إذا كنا بعيدين عنها -->
+                    {% if page < pages - 3 %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+
+                    <!-- الصفحة الأخيرة (إذا كانت أكثر من 1) -->
+                    {% if pages > 1 %}
+                        <li class="page-item {% if page == pages %}active{% endif %}">
+                            <a class="page-link"
+                               href="{{ url_for('evaluation_list', period_id=selected_period_id, page=pages) }}">{{ pages }}</a>
+                        </li>
+                    {% endif %}
+
+                    <!-- التالي -->
+                    <li class="page-item {% if page >= pages %}disabled{% endif %}">
+                        <a class="page-link"
+                           href="{% if page < pages %}{{ url_for('evaluation_list', period_id=selected_period_id, page=page+1) }}{% else %}#{% endif %}">
+                            التالي
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- التقييمات الموجودة -->
+<div class="table-card">
+    <div class="p-3 border-bottom bg-light">
+        <strong>📊 التقييمات الموجودة</strong>
+    </div>
+    <div class="p-3">
+        {% if evaluations %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>اسم الموظف</th>
+                        <th>المقيم</th>
+                        <th>التقييم العام</th>
+                        <th>النقاط</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإنشاء</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evaluation in evaluations %}
+                    <tr>
+                        <td><strong>{{ evaluation.employee_name }}</strong></td>
+                        <td>{{ evaluation.evaluator_name }}</td>
+                        <td>
+                            {% if evaluation.overall_rating %}
+                                {% if evaluation.overall_rating == 'ممتاز' %}
+                                    <span class="badge bg-success">{{ evaluation.overall_rating }}</span>
+                                {% elif evaluation.overall_rating == 'جيد جداً' %}
+                                    <span class="badge bg-info">{{ evaluation.overall_rating }}</span>
+                                {% elif evaluation.overall_rating == 'جيد' %}
+                                    <span class="badge bg-primary">{{ evaluation.overall_rating }}</span>
+                                {% elif evaluation.overall_rating == 'مقبول' %}
+                                    <span class="badge bg-warning">{{ evaluation.overall_rating }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ evaluation.overall_rating }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">غير محدد</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if evaluation.overall_score %}
+                                <strong>{{ "%.1f"|format(evaluation.overall_score) }}</strong>/5.0
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if evaluation.status == 'completed' %}
+                                <span class="badge bg-success">مكتمل</span>
+                            {% elif evaluation.status == 'draft' %}
+                                <span class="badge bg-warning">مسودة</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ evaluation.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ evaluation.created_date[:10] }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                           
+                                {% if evaluation.status == 'draft' %}
+                                <a href="/performance/evaluate/{{ evaluation.employee_id }}?period_id={{ selected_period_id }}" 
+                                   class="btn btn-outline-primary btn-sm" title="تحرير">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                                
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center mb-0">
+            لا توجد تقييمات للفترة المحددة.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% else %}
+<!-- رسالة عدم اختيار فترة -->
+<div class="alert alert-warning text-center">
+    يرجى اختيار فترة تقييمية لعرض التقييمات.
+</div>
+{% endif %}
+
+{% endblock %}
+

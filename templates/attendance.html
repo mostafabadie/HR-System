@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}سجل الحضور والانصراف | نظام الموارد البشرية{% endblock %}
+
+{% block content %}
+<style>
+    .attendance-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+    .attendance-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .attendance-header p {
+        margin: 0.25rem 0 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    .attendance-table-wrapper {
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
+    }
+    .attendance-table thead th {
+        background: #0f172a;
+        color: #e5e7eb;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-align: center;
+        padding: 0.75rem;
+        white-space: nowrap;
+    }
+    .attendance-table tbody td {
+        vertical-align: middle;
+        text-align: center;
+        padding: 0.6rem 0.5rem;
+        font-size: 0.9rem;
+        border-top: 1px solid #f1f5f9;
+    }
+    .attendance-table tbody tr:nth-child(even) {
+        background: #f8fafc;
+    }
+    .attendance-table tbody tr:hover {
+        background: #eff6ff;
+    }
+    .status-badge {
+        border-radius: 999px;
+        padding: 0.25rem 0.7rem;
+        font-size: 0.8rem;
+    }
+    .status-complete {
+        background-color: #22c55e1a;
+        color: #15803d;
+        border: 1px solid #22c55e66;
+    }
+    .status-working {
+        background-color: #facc151a;
+        color: #854d0e;
+        border: 1px solid #facc1566;
+    }
+    .status-absent {
+        background-color: #cbd5f51a;
+        color: #475569;
+        border: 1px solid #cbd5f566;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+    .empty-state span {
+        display: block;
+        margin-top: 0.5rem;
+    }
+    .back-btn {
+        margin-top: 1.5rem;
+    }
+</style>
+
+<div class="attendance-header">
+    <div>
+        <h1>سجل الحضور والانصراف</h1>
+        <p>عرض حالة دخول وخروج الموظفين مع حالة اليوم.</p>
+    </div>
+</div>
+
+<div class="attendance-table-wrapper">
+    {% if records %}
+    <div class="table-responsive mb-0">
+        <table class="table attendance-table mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم الموظف</th>
+                    <th>التاريخ</th>
+                    <th>وقت الدخول</th>
+                    <th>وقت الخروج</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.id }}</td>
+                    <td>{{ record.name }}</td>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.check_in or '—' }}</td>
+                    <td>{{ record.check_out or '—' }}</td>
+                    <td>
+                        {% if record.check_in and record.check_out %}
+                            <span class="status-badge status-complete">مكتمل</span>
+                        {% elif record.check_in %}
+                            <span class="status-badge status-working">بالعمل</span>
+                        {% else %}
+                            <span class="status-badge status-absent">لم يحضر</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        لا توجد سجلات حضور مسجلة بعد.
+        <span>يمكنك تسجيل الحضور من صفحة قائمة الموظفين.</span>
+    </div>
+    {% endif %}
+</div>
+
+<div class="text-center back-btn">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        ⬅ الرجوع للرئيسية
+    </a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}الفترات التقييمية - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📅 إدارة الفترات التقييمية</h2>
+    <div>
+        <a href="/performance/periods/create" class="btn btn-success">
+            <i class="fas fa-plus"></i> إنشاء فترة جديدة
+        </a>
+        <a href="/performance" class="btn btn-secondary">العودة للوحة الأداء</a>
+    </div>
+</div>
+
+<!-- قائمة الفترات التقييمية -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">📋 الفترات التقييمية</h5>
+    </div>
+    <div class="card-body">
+        {% if periods %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="periodsTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>اسم الفترة</th>
+                        <th>السنة</th>
+                        <th>الربع</th>
+                        <th>تاريخ البداية</th>
+                        <th>تاريخ النهاية</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإنشاء</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for period in periods %}
+                    <tr>
+                        <td><strong>{{ period.name }}</strong></td>
+                        <td>{{ period.year }}</td>
+                        <td>الربع {{ period.quarter }}</td>
+                        <td>{{ period.start_date }}</td>
+                        <td>{{ period.end_date }}</td>
+                        <td>
+                            {% if period.status == 'active' %}
+                                <span class="badge bg-success">نشطة</span>
+                            {% elif period.status == 'completed' %}
+                                <span class="badge bg-primary">مكتملة</span>
+                            {% elif period.status == 'draft' %}
+                                <span class="badge bg-warning">مسودة</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ period.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ period.created_date[:10] if period.created_date else '-' }}</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="/performance/evaluate?period_id={{ period.id }}" 
+                                   class="btn btn-outline-primary btn-sm" title="إدارة التقييمات">
+                                    <i class="fas fa-clipboard-check"></i>
+                                </a>
+                                <a href="/performance/reports?period_id={{ period.id }}" 
+                                   class="btn btn-outline-info btn-sm" title="التقارير">
+                                    <i class="fas fa-chart-bar"></i>
+                                </a>
+                                {% if period.status == 'active' %}
+                                <button class="btn btn-outline-warning btn-sm" 
+                                        onclick="changePeriodStatus({{ period.id }}, 'completed')" 
+                                        title="إكمال الفترة">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i>
+            لا توجد فترات تقييمية. 
+            <a href="/performance/periods/create" class="alert-link">إنشاء فترة جديدة</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- معلومات إضافية -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">💡 نصائح لإدارة الفترات التقييمية</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li class="mb-2">يُنصح بإنشاء فترات تقييمية ربع سنوية للحصول على تقييم منتظم</li>
+                    <li class="mb-2">تأكد من إكمال جميع التقييمات قبل إنهاء الفترة</li>
+                    <li class="mb-2">يمكن أن تكون فترة واحدة فقط نشطة في أي وقت</li>
+                    <li class="mb-0">استخدم التقارير لتحليل أداء الموظفين عبر الفترات</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">📊 إحصائيات سريعة</h6>
+            </div>
+            <div class="card-body">
+                {% set active_periods = periods|selectattr('status', 'equalto', 'active')|list %}
+                {% set completed_periods = periods|selectattr('status', 'equalto', 'completed')|list %}
+                {% set draft_periods = periods|selectattr('status', 'equalto', 'draft')|list %}
+                
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="text-success">{{ active_periods|length }}</h4>
+                        <small>نشطة</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-primary">{{ completed_periods|length }}</h4>
+                        <small>مكتملة</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-warning">{{ draft_periods|length }}</h4>
+                        <small>مسودة</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- تضمين DataTables -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل DataTables
+    $('#periodsTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/ar.json'
+        },
+        pageLength: 25,
+        order: [[1, 'desc'], [2, 'desc']], // ترتيب حسب السنة والربع تنازلياً
+        columnDefs: [
+            { orderable: false, targets: [7] } // عمود الإجراءات غير قابل للترتيب
+        ]
+    });
+});
+
+function changePeriodStatus(periodId, newStatus) {
+    if (confirm('هل أنت متأكد من تغيير حالة الفترة التقييمية؟')) {
+        // هنا يمكن إضافة AJAX call لتغيير الحالة
+        // في الوقت الحالي، سنعيد تحميل الصفحة
+        alert('سيتم تنفيذ هذه الميزة في التحديث القادم');
+    }
+}
+</script>
+
+<!-- Font Awesome للأيقونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.table th {
+    border-top: none;
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
+

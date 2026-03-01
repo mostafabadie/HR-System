@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}طلباتي - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📝 طلبات الإجازة الخاصة بي</h2>
+    <a href="/leaves/request" class="btn btn-primary">طلب إجازة جديد</a>
+</div>
+
+<!-- رصيد الإجازات -->
+{% if balances %}
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">💰 رصيد الإجازات</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for balance in balances %}
+            <div class="col-md-6 col-lg-3 mb-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">{{ balance.leave_type_name }}</h6>
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="text-success">
+                                    <strong>{{ balance.remaining_days }}</strong>
+                                    <br><small>متبقي</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-warning">
+                                    <strong>{{ balance.used_days }}</strong>
+                                    <br><small>مستخدم</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="text-info">
+                                    <strong>{{ balance.allocated_days }}</strong>
+                                    <br><small>مخصص</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar bg-success" 
+                                 style="width: {{ (balance.remaining_days / balance.allocated_days * 100) if balance.allocated_days > 0 else 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- طلبات الإجازة -->
+{% if requests %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">قائمة طلباتي</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>نوع الإجازة</th>
+                        <th>تاريخ البداية</th>
+                        <th>تاريخ النهاية</th>
+                        <th>عدد الأيام</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الطلب</th>
+                        <th>المعتمد من</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in requests %}
+                    <tr>
+                        <td>{{ request.leave_type_name }}</td>
+                        <td>{{ request.start_date }}</td>
+                        <td>{{ request.end_date }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ request.days_requested }} يوم</span>
+                        </td>
+                        <td>
+                            {% if request.status == 'pending' %}
+                                <span class="badge bg-warning">⏳ معلق</span>
+                            {% elif request.status == 'approved' %}
+                                <span class="badge bg-success">✅ موافق عليه</span>
+                            {% elif request.status == 'rejected' %}
+                                <span class="badge bg-danger">❌ مرفوض</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ request.request_date.split(' ')[0] }}</td>
+                        <td>
+                            {% if request.approved_by_name %}
+                                {{ request.approved_by_name }}
+                                <br><small class="text-muted">{{ request.approved_date.split(' ')[0] if request.approved_date }}</small>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#detailsModal{{ request.id }}">
+                                تفاصيل
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal التفاصيل -->
+                    <div class="modal fade" id="detailsModal{{ request.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">تفاصيل طلب الإجازة</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <td><strong>نوع الإجازة:</strong></td>
+                                            <td>{{ request.leave_type_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ البداية:</strong></td>
+                                            <td>{{ request.start_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ النهاية:</strong></td>
+                                            <td>{{ request.end_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>عدد الأيام:</strong></td>
+                                            <td>{{ request.days_requested }} يوم</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ الطلب:</strong></td>
+                                            <td>{{ request.request_date }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>الحالة:</strong></td>
+                                            <td>
+                                                {% if request.status == 'pending' %}
+                                                    <span class="badge bg-warning">معلق</span>
+                                                {% elif request.status == 'approved' %}
+                                                    <span class="badge bg-success">موافق عليه</span>
+                                                {% elif request.status == 'rejected' %}
+                                                    <span class="badge bg-danger">مرفوض</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% if request.approved_by_name %}
+                                        <tr>
+                                            <td><strong>المعتمد من:</strong></td>
+                                            <td>{{ request.approved_by_name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>تاريخ الاعتماد:</strong></td>
+                                            <td>{{ request.approved_date }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    </table>
+                                    
+                                    {% if request.reason %}
+                                    <div class="mt-3">
+                                        <h6>سبب الإجازة</h6>
+                                        <p class="bg-light p-3 rounded">{{ request.reason }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if request.comments %}
+                                    <div class="mt-3">
+                                        <h6>تعليقات المدير</h6>
+                                        <p class="bg-light p-3 rounded">{{ request.comments }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i class="fas fa-calendar-plus fa-5x text-muted"></i>
+    </div>
+    <h4 class="text-muted">لا توجد طلبات إجازة</h4>
+    <p class="text-muted">لم تقم بتقديم أي طلبات إجازة بعد</p>
+    <a href="/leaves/request" class="btn btn-primary">طلب إجازة جديد</a>
+</div>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}نظام إدارة الموارد البشرية{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --hr-primary: #0f766e;
+            --hr-primary-dark: #0d9488;
+            --hr-primary-soft: #ecfdf5;
+            --hr-surface: #f1f5f9;
+            --hr-border-subtle: #e2e8f0;
+            --hr-text-main: #020617;
+            --hr-text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
+            background:
+                radial-gradient(ellipse 120% 80% at 100% 0%, rgba(45, 212, 191, 0.18), transparent),
+                radial-gradient(ellipse 120% 80% at 0% 0%, rgba(56, 189, 248, 0.12), transparent),
+                var(--hr-surface);
+            color: var(--hr-text-main);
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #020617, #0f172a);
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.45);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: .45rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .navbar-brand span.logo-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--hr-primary), var(--hr-primary-dark));
+            box-shadow: 0 10px 20px rgba(15, 118, 110, 0.5);
+            font-size: 1.1rem;
+        }
+
+        .navbar-nav .nav-link {
+            position: relative;
+            padding-inline: 0.9rem;
+            color: #e2e8f0 !important;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+        }
+
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            inset-inline-start: 0.9rem;
+            inset-inline-end: 0.9rem;
+            bottom: 0.2rem;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--hr-primary), var(--hr-primary-dark));
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 0.2s ease-out;
+        }
+
+        .navbar-nav .nav-link:hover::after,
+        .navbar-nav .nav-link.active::after {
+            transform: scaleX(1);
+        }
+
+        .navbar-nav .dropdown-menu {
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
+            padding-block: .35rem;
+            padding-inline: .25rem;
+        }
+
+        .navbar-nav .dropdown-item {
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .navbar-nav .dropdown-item:hover {
+            background: rgba(15, 118, 110, 0.08);
+        }
+
+        .layout-shell {
+            padding: 1.25rem 0 2.5rem;
+        }
+
+        .layout-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-inline: 1rem;
+        }
+
+        .content-card {
+            background: rgba(248, 250, 252, 0.98);
+            border-radius: 18px;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+            padding: 1.5rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .layout-shell {
+                padding-top: 1rem;
+            }
+            .content-card {
+                padding: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شريط التنقل -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <span class="logo-circle">HR</span>
+                <span>نظام إدارة الموارد البشرية</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/employees">الموظفين</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/payroll">الرواتب</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/attendance">الحضور والغياب</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            الإجازات
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="/leaves/request">طلب إجازة</a></li>
+                            <li><a class="dropdown-item" href="/leaves/pending">الطلبات المعلقة</a></li>
+                            <li><a class="dropdown-item" href="/leaves">جميع الطلبات</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="performanceDropdown" role="button" data-bs-toggle="dropdown">
+                            إدارة الأداء
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="performanceDropdown">
+                            <li><a class="dropdown-item" href="/performance">لوحة الأداء</a></li>
+                            <li><a class="dropdown-item" href="/performance/evaluate">التقييمات</a></li>
+                            <li><a class="dropdown-item" href="/performance/periods">الفترات التقييمية</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- محتوى الصفحة -->
+    <div class="layout-shell">
+        <div class="layout-container">
+            <div class="content-card">
+                {% with messages = get_flashed_messages(with_categories=True) %}
+                    {% if messages %}
+                        <div class="mb-3">
+                            {% for category, message in messages %}
+                                {% if category == 'error' %}
+                                    {% set bs_category = 'danger' %}
+                                {% else %}
+                                    {% set bs_category = category %}
+                                {% endif %}
+                                <div class="alert alert-{{ bs_category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

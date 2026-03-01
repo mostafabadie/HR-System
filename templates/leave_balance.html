@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}رصيد الإجازات - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>💰 رصيد الإجازات</h2>
+    <div>
+        {% if employee %}
+            <span class="badge bg-info fs-6">{{ employee.name }}</span>
+        {% endif %}
+        <a href="/leaves/request" class="btn btn-primary ms-2">طلب إجازة جديد</a>
+    </div>
+</div>
+
+{% if balances %}
+<div class="row">
+    {% for balance in balances %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-primary">
+            <div class="card-header bg-primary text-white text-center">
+                <h5 class="mb-0">{{ balance.leave_type_name }}</h5>
+            </div>
+            <div class="card-body">
+                <!-- إحصائيات الرصيد -->
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <div class="border-end">
+                            <h4 class="text-success mb-1">{{ balance.remaining_days }}</h4>
+                            <small class="text-muted">متبقي</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border-end">
+                            <h4 class="text-warning mb-1">{{ balance.used_days }}</h4>
+                            <small class="text-muted">مستخدم</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="text-info mb-1">{{ balance.allocated_days }}</h4>
+                        <small class="text-muted">مخصص</small>
+                    </div>
+                </div>
+
+                <!-- شريط التقدم -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>الاستخدام</small>
+                        <small>{{ ((balance.used_days / balance.allocated_days * 100) | round(1)) if balance.allocated_days > 0 else 0 }}%</small>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-warning" 
+                             style="width: {{ (balance.used_days / balance.allocated_days * 100) if balance.allocated_days > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+
+                <!-- معلومات إضافية -->
+                <div class="small text-muted">
+                    <div class="d-flex justify-content-between">
+                        <span>السنة:</span>
+                        <span>{{ balance.year }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>نسبة الاستخدام:</span>
+                        <span>{{ ((balance.used_days / balance.allocated_days * 100) | round(1)) if balance.allocated_days > 0 else 0 }}%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                {% if balance.remaining_days > 0 %}
+                    <span class="badge bg-success">متاح للاستخدام</span>
+                {% else %}
+                    <span class="badge bg-danger">الرصيد منتهي</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ملخص إجمالي -->
+<div class="card mt-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">📊 ملخص إجمالي</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="border-end">
+                    <h3 class="text-primary">{{ balances | sum(attribute='allocated_days') }}</h3>
+                    <p class="mb-0 text-muted">إجمالي المخصص</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="border-end">
+                    <h3 class="text-warning">{{ balances | sum(attribute='used_days') }}</h3>
+                    <p class="mb-0 text-muted">إجمالي المستخدم</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="border-end">
+                    <h3 class="text-success">{{ balances | sum(attribute='remaining_days') }}</h3>
+                    <p class="mb-0 text-muted">إجمالي المتبقي</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <h3 class="text-info">{{ ((balances | sum(attribute='used_days') / balances | sum(attribute='allocated_days') * 100) | round(1)) if balances | sum(attribute='allocated_days') > 0 else 0 }}%</h3>
+                <p class="mb-0 text-muted">نسبة الاستخدام الإجمالية</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نصائح وإرشادات -->
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h6 class="mb-0">💡 نصائح وإرشادات</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>📋 قواعد الإجازات</h6>
+                <ul class="small">
+                    <li>يتم تجديد رصيد الإجازات السنوية في بداية كل عام</li>
+                    <li>لا يمكن ترحيل الإجازات غير المستخدمة للعام التالي</li>
+                    <li>يجب تقديم طلب الإجازة قبل 3 أيام على الأقل</li>
+                    <li>الإجازات الطارئة تحتاج موافقة فورية من المدير</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>⚠️ تنبيهات</h6>
+                <ul class="small">
+                    {% for balance in balances %}
+                        {% if balance.remaining_days <= 5 and balance.remaining_days > 0 %}
+                            <li class="text-warning">رصيد {{ balance.leave_type_name }} منخفض ({{ balance.remaining_days }} أيام)</li>
+                        {% elif balance.remaining_days == 0 %}
+                            <li class="text-danger">رصيد {{ balance.leave_type_name }} منتهي</li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if not (balances | selectattr('remaining_days', 'le', 5) | list) %}
+                        <li class="text-success">جميع أرصدة الإجازات في وضع جيد</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i class="fas fa-calendar-times fa-5x text-muted"></i>
+    </div>
+    <h4 class="text-muted">لا يوجد رصيد إجازات</h4>
+    <p class="text-muted">لم يتم تخصيص رصيد إجازات لهذا الموظف بعد</p>
+    <button class="btn btn-primary" onclick="window.location.reload()">تحديث الصفحة</button>
+</div>
+{% endif %}
+{% endblock %}
+

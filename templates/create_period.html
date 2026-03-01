@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}إنشاء فترة تقييمية جديدة - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>➕ إنشاء فترة تقييمية جديدة</h2>
+    <a href="/performance/periods" class="btn btn-secondary">العودة للفترات</a>
+</div>
+
+<!-- نموذج إنشاء الفترة -->
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📅 بيانات الفترة التقييمية</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">اسم الفترة <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="مثل: الربع الأول 2024" required>
+                            <div class="form-text">اختر اسماً وصفياً للفترة التقييمية</div>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <label for="year" class="form-label">السنة <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="year" name="year" 
+                                   min="2020" max="2030" value="2024" required>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <label for="quarter" class="form-label">الربع <span class="text-danger">*</span></label>
+                            <select class="form-select" id="quarter" name="quarter" required>
+                                <option value="">اختر الربع</option>
+                                <option value="1">الربع الأول (يناير - مارس)</option>
+                                <option value="2">الربع الثاني (أبريل - يونيو)</option>
+                                <option value="3">الربع الثالث (يوليو - سبتمبر)</option>
+                                <option value="4">الربع الرابع (أكتوبر - ديسمبر)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">تاريخ البداية <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">تاريخ النهاية <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save"></i> إنشاء الفترة التقييمية
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- معلومات إرشادية -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">💡 نصائح لإنشاء الفترة التقييمية</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li class="mb-2">تأكد من عدم تداخل الفترات التقييمية</li>
+                    <li class="mb-2">يُنصح بفترات ربع سنوية (3 أشهر) للحصول على تقييم منتظم</li>
+                    <li class="mb-2">اختر تواريخ واضحة ومحددة للبداية والنهاية</li>
+                    <li class="mb-0">يمكن تعديل الفترة قبل بدء التقييمات</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">📋 أمثلة على الفترات التقييمية</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>الربع الأول 2024:</strong>
+                    <br><small class="text-muted">1 يناير 2024 - 31 مارس 2024</small>
+                </div>
+                <div class="mb-3">
+                    <strong>الربع الثاني 2024:</strong>
+                    <br><small class="text-muted">1 أبريل 2024 - 30 يونيو 2024</small>
+                </div>
+                <div class="mb-3">
+                    <strong>الربع الثالث 2024:</strong>
+                    <br><small class="text-muted">1 يوليو 2024 - 30 سبتمبر 2024</small>
+                </div>
+                <div class="mb-0">
+                    <strong>الربع الرابع 2024:</strong>
+                    <br><small class="text-muted">1 أكتوبر 2024 - 31 ديسمبر 2024</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome للأيقونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.form-text {
+    font-size: 0.875em;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quarterSelect = document.getElementById('quarter');
+    const yearInput = document.getElementById('year');
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    const nameInput = document.getElementById('name');
+    
+    // تحديث التواريخ تلقائياً عند اختيار الربع والسنة
+    function updateDates() {
+        const quarter = quarterSelect.value;
+        const year = yearInput.value;
+        
+        if (quarter && year) {
+            let startDate, endDate;
+            
+            switch(quarter) {
+                case '1':
+                    startDate = `${year}-01-01`;
+                    endDate = `${year}-03-31`;
+                    break;
+                case '2':
+                    startDate = `${year}-04-01`;
+                    endDate = `${year}-06-30`;
+                    break;
+                case '3':
+                    startDate = `${year}-07-01`;
+                    endDate = `${year}-09-30`;
+                    break;
+                case '4':
+                    startDate = `${year}-10-01`;
+                    endDate = `${year}-12-31`;
+                    break;
+            }
+            
+            startDateInput.value = startDate;
+            endDateInput.value = endDate;
+            
+            // تحديث اسم الفترة تلقائياً
+            const quarterNames = {
+                '1': 'الربع الأول',
+                '2': 'الربع الثاني',
+                '3': 'الربع الثالث',
+                '4': 'الربع الرابع'
+            };
+            
+            if (!nameInput.value || nameInput.value.includes('الربع')) {
+                nameInput.value = `${quarterNames[quarter]} ${year}`;
+            }
+        }
+    }
+    
+    quarterSelect.addEventListener('change', updateDates);
+    yearInput.addEventListener('change', updateDates);
+    
+    // التحقق من صحة التواريخ
+    function validateDates() {
+        const startDate = new Date(startDateInput.value);
+        const endDate = new Date(endDateInput.value);
+        
+        if (startDate >= endDate) {
+            alert('تاريخ النهاية يجب أن يكون بعد تاريخ البداية');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // التحقق عند تقديم النموذج
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!validateDates()) {
+            e.preventDefault();
+        }
+    });
+    
+    startDateInput.addEventListener('change', validateDates);
+    endDateInput.addEventListener('change', validateDates);
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,681 @@
+{% extends "base.html" %}
+{% block title %}إضافة موظف جديد | نظام الموارد البشرية{% endblock %}
+
+{% block content %}
+<style>
+    .add-employee-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .add-employee-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .add-employee-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #0f172a, #0f766e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    
+    .add-employee-header p {
+        color: #64748b;
+        font-size: 1rem;
+    }
+    
+    /* بطاقة النموذج */
+    .employee-form-card {
+        background: #ffffff;
+        border-radius: 32px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        padding: 2rem;
+        animation: slideUp 0.5s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ترويسة الأقسام */
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin: 2rem 0 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .section-header:first-of-type {
+        margin-top: 0;
+    }
+    
+    .section-header i {
+        font-size: 1.5rem;
+        color: #0f766e;
+        background: #f0fdfa;
+        padding: 0.75rem;
+        border-radius: 18px;
+    }
+    
+    .section-header h3 {
+        margin: 0;
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 1.3rem;
+    }
+    
+    .section-header span {
+        color: #64748b;
+        font-size: 0.9rem;
+        font-weight: normal;
+        margin-right: 0.5rem;
+    }
+    
+    /* حقل الصورة الشخصية */
+    .image-upload-container {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 24px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .image-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 4px solid white;
+        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .image-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 20px 30px -10px rgba(15,118,110,0.3);
+    }
+    
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .image-preview i {
+        font-size: 3rem;
+        color: #94a3b8;
+    }
+    
+    .image-upload-details {
+        flex: 1;
+    }
+    
+    .image-upload-details h4 {
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .image-upload-details p {
+        color: #64748b;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .file-input-wrapper input[type="file"] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+    
+    .btn-upload {
+        background: white;
+        color: #0f766e;
+        border: 2px solid #0f766e;
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .btn-upload:hover {
+        background: #0f766e;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -5px rgba(15,118,110,0.3);
+    }
+    
+    /* حقل رفع السيرة الذاتية */
+    .cv-upload-area {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        border: 2px dashed #cbd5e1;
+        border-radius: 24px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .cv-upload-area:hover {
+        border-color: #0f766e;
+        background: #f0fdfa;
+        transform: translateY(-2px);
+    }
+    
+    .cv-upload-area i {
+        font-size: 3rem;
+        color: #0f766e;
+        margin-bottom: 1rem;
+    }
+    
+    .cv-upload-area h4 {
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+    
+    .cv-upload-area p {
+        color: #64748b;
+        margin-bottom: 1rem;
+    }
+    
+    .cv-upload-area .file-info {
+        background: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        display: inline-block;
+        color: #0f766e;
+        font-weight: 600;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .cv-upload-area input[type="file"] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    /* شبكة النموذج */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem 1.5rem;
+    }
+    
+    .form-grid .full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-label i {
+        color: #0f766e;
+        font-size: 0.9rem;
+    }
+    
+    .form-label .required {
+        color: #ef4444;
+        font-size: 0.8rem;
+        margin-right: 0.25rem;
+    }
+    
+    .form-control {
+        border-radius: 16px;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .form-control:focus {
+        border-color: #0f766e;
+        box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+        outline: none;
+    }
+    
+    .form-control:hover {
+        border-color: #14b8a6;
+    }
+    
+    .form-text {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        margin-top: 0.35rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    
+    .form-text i {
+        color: #0f766e;
+    }
+    
+    /* أزرار الإجراءات */
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e2e8f0;
+    }
+    
+    .btn-primary-hr {
+        background: linear-gradient(135deg, #0f766e, #14b8a6);
+        border: none;
+        color: white;
+        border-radius: 50px;
+        padding: 1rem 2.5rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0 10px 15px -5px rgba(15, 118, 110, 0.3);
+    }
+    
+    .btn-primary-hr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(15, 118, 110, 0.4);
+        color: white;
+    }
+    
+    .btn-outline-secondary-hr {
+        background: white;
+        color: #64748b;
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-secondary-hr:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+        color: #0f172a;
+    }
+    
+    /* رسائل النجاح */
+    .upload-success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    /* استجابة للشاشات الصغيرة */
+    @media (max-width: 768px) {
+        .add-employee-wrapper {
+            padding: 1rem;
+        }
+        
+        .employee-form-card {
+            padding: 1.5rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .image-upload-container {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn-primary-hr, .btn-outline-secondary-hr {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="add-employee-wrapper">
+    <div class="add-employee-header">
+        <h1>إضافة موظف جديد</h1>
+        <p>قم بإدخال البيانات الأساسية مع الصورة الشخصية والسيرة الذاتية</p>
+    </div>
+
+    <div class="employee-form-card">
+        <!-- مهم: إضافة enctype للملفات -->
+        <form method="POST" enctype="multipart/form-data">
+            <!-- CSRF token لو موجود -->
+            
+            <!-- قسم البيانات الشخصية -->
+            <div class="section-header">
+                <i class="fas fa-user-circle"></i>
+                <h3>البيانات الشخصية <span>المعلومات الأساسية للموظف</span></h3>
+            </div>
+            
+            <div class="form-grid">
+                <div class="mb-3 full-width">
+                    <label class="form-label" for="name">
+                        <i class="fas fa-user-tag"></i>
+                        الاسم الكامل
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text"
+                           id="name"
+                           name="name"
+                           class="form-control"
+                           placeholder="أدخل الاسم الرباعي"
+                           required>
+                    <div class="form-text">
+                        <i class="fas fa-info-circle"></i>
+                        الاسم كما سيظهر في التقارير الرسمية
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="department">
+                        <i class="fas fa-building"></i>
+                        القسم
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text"
+                           id="department"
+                           name="department"
+                           class="form-control"
+                           placeholder="مثال: تكنولوجيا المعلومات"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="position">
+                        <i class="fas fa-briefcase"></i>
+                        المسمى الوظيفي
+                        <span class="required">*</span>
+                    </label>
+                    <input type="text"
+                           id="position"
+                           name="position"
+                           class="form-control"
+                           placeholder="مثال: مطور ويب أول"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="phone">
+                        <i class="fas fa-phone"></i>
+                        رقم الهاتف
+                        <span class="required">*</span>
+                    </label>
+                    <input type="tel"
+                           id="phone"
+                           name="phone"
+                           class="form-control"
+                           placeholder="01XXXXXXXXX"
+                           pattern="[0-9]{11}"
+                           required>
+                    <div class="form-text">
+                        <i class="fas fa-mobile-alt"></i>
+                        رقم مصري مكون من 11 رقم
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="email">
+                        <i class="fas fa-envelope"></i>
+                        البريد الإلكتروني
+                        <span class="required">*</span>
+                    </label>
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           class="form-control"
+                           placeholder="employee@company.com"
+                           required>
+                </div>
+
+                <div class="mb-3 full-width">
+                    <label class="form-label" for="address">
+                        <i class="fas fa-map-marker-alt"></i>
+                        العنوان
+                    </label>
+                    <input type="text"
+                           id="address"
+                           name="address"
+                           class="form-control"
+                           placeholder="العنوان بالتفصيل">
+                    <div class="form-text">اختياري: العنوان الكامل للسكن</div>
+                </div>
+            </div>
+
+            <!-- قسم الصورة الشخصية -->
+            <div class="section-header">
+                <i class="fas fa-camera"></i>
+                <h3>الصورة الشخصية <span>اختياري - يفضل صورة رسمية</span></h3>
+            </div>
+            
+            <div class="image-upload-container">
+                <div class="image-preview" id="imagePreview">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="image-upload-details">
+                    <h4>صورة الموظف</h4>
+                    <p>اختر صورة شخصية واضحة، يفضل أن تكون بخلفية بيضاء أو زرقاء فاتحة.</p>
+                    <div class="file-input-wrapper">
+                        <button type="button" class="btn-upload" onclick="document.getElementById('profileImage').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            اختر صورة
+                        </button>
+                        <input type="file" 
+                               id="profileImage" 
+                               name="profile_image" 
+                               accept="image/*"
+                               onchange="previewImage(this)">
+                    </div>
+                    <div class="form-text mt-2">
+                        <i class="fas fa-info-circle"></i>
+                        الصيغ المسموحة: JPG, PNG, GIF - الحد الأقصى 2 ميجابايت
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم السيرة الذاتية -->
+            <div class="section-header">
+                <i class="fas fa-file-pdf"></i>
+                <h3>السيرة الذاتية (CV) <span>اختياري - PDF أو Word</span></h3>
+            </div>
+            
+            <div class="cv-upload-area" id="cvUploadArea" onclick="document.getElementById('cvFile').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h4>ارفع السيرة الذاتية</h4>
+                <p>اسحب وأفلت الملف هنا أو اضغط للاختيار</p>
+                <div class="file-info" id="cvFileName">
+                    <i class="fas fa-file-pdf"></i>
+                    لم يتم اختيار ملف
+                </div>
+                <input type="file" 
+                       id="cvFile" 
+                       name="cv_file" 
+                       accept=".pdf,.doc,.docx"
+                       onchange="updateCVName(this)">
+                <div class="form-text mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    الصيغ المسموحة: PDF, DOC, DOCX - الحد الأقصى 5 ميجابايت
+                </div>
+            </div>
+
+            <!-- قسم الراتب والمعلومات المالية -->
+            <div class="section-header">
+                <i class="fas fa-money-bill-wave"></i>
+                <h3>المعلومات المالية</h3>
+            </div>
+            
+            <div class="form-grid">
+                <div class="mb-3">
+                    <label class="form-label" for="salary">
+                        <i class="fas fa-coins"></i>
+                        الراتب الأساسي
+                        <span class="required">*</span>
+                    </label>
+                    <input type="number"
+                           id="salary"
+                           name="salary"
+                           class="form-control"
+                           min="0"
+                           step="0.01"
+                           placeholder="أدخل الراتب"
+                           required>
+                    <div class="form-text">
+                        <i class="fas fa-money-bill"></i>
+                        بالجنيه المصري
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="bank_account">
+                        <i class="fas fa-university"></i>
+                        رقم الحساب البنكي
+                    </label>
+                    <input type="text"
+                           id="bank_account"
+                           name="bank_account"
+                           class="form-control"
+                           placeholder="اختياري - لتحويل الراتب">
+                </div>
+            </div>
+
+            <!-- أزرار الإجراءات -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary-hr">
+                    <i class="fas fa-save fa-lg"></i>
+                    حفظ بيانات الموظف
+                </button>
+                <a href="{{ url_for('employees') }}" class="btn-outline-secondary-hr">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للقائمة
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript للتحكم في رفع الملفات -->
+<script>
+// معاينة الصورة قبل الرفع
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `<img src="${e.target.result}" alt="صورة الموظف">`;
+            preview.style.background = 'none';
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.innerHTML = '<i class="fas fa-user"></i>';
+    }
+}
+
+// تحديث اسم ملف السيرة الذاتية
+function updateCVName(input) {
+    const fileNameElement = document.getElementById('cvFileName');
+    const uploadArea = document.getElementById('cvUploadArea');
+    
+    if (input.files && input.files[0]) {
+        const fileName = input.files[0].name;
+        const fileSize = (input.files[0].size / 1024 / 1024).toFixed(2);
+        
+        fileNameElement.innerHTML = `
+            <i class="fas fa-check-circle" style="color: #10b981;"></i>
+            ${fileName} (${fileSize} MB)
+        `;
+        
+        // تغيير لون المنطقة عند رفع ملف
+        uploadArea.style.background = '#f0fdfa';
+        uploadArea.style.borderColor = '#10b981';
+    } else {
+        fileNameElement.innerHTML = `
+            <i class="fas fa-file-pdf"></i>
+            لم يتم اختيار ملف
+        `;
+        uploadArea.style.background = 'linear-gradient(135deg, #f8fafc, #f1f5f9)';
+        uploadArea.style.borderColor = '#cbd5e1';
+    }
+}
+
+// التحقق من حجم الملف قبل الرفع
+document.getElementById('profileImage').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.size > 2 * 1024 * 1024) { // 2MB
+        alert('⚠️ حجم الصورة كبير جداً. الحد الأقصى 2 ميجابايت');
+        this.value = '';
+        previewImage(this);
+    }
+});
+
+document.getElementById('cvFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file && file.size > 5 * 1024 * 1024) { // 5MB
+        alert('⚠️ حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت');
+        this.value = '';
+        updateCVName(this);
+    }
+});
+</script>
+{% endblock %}

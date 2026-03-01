@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+
+{% block title %}تقارير الإجازات - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>🏖️ تقارير الإجازات والرصيد</h2>
+    <a href="/reports" class="btn btn-secondary">العودة للوحة التقارير</a>
+</div>
+
+<!-- إحصائيات سريعة -->
+<div class="row mb-4">
+    {% if leave_usage %}
+    {% set total_days_used = leave_usage|sum(attribute='total_days_used') %}
+    {% set most_used_leave = leave_usage|max(attribute='total_days_used') %}
+    {% set least_used_leave = leave_usage|min(attribute='total_days_used') %}
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h3>{{ total_days_used }}</h3>
+                <p class="mb-0">إجمالي أيام الإجازات المستخدمة</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4>{{ most_used_leave.leave_type_name }}</h4>
+                <p class="mb-0">أكثر الإجازات استخداماً</p>
+                <small>{{ most_used_leave.total_days_used }} يوم</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4>{{ least_used_leave.leave_type_name }}</h4>
+                <p class="mb-0">أقل الإجازات استخداماً</p>
+                <small>{{ least_used_leave.total_days_used }} يوم</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h3>{{ leave_usage|length }}</h3>
+                <p class="mb-0">أنواع الإجازات المتاحة</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- الرسوم البيانية -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">📊 استخدام الإجازات حسب النوع - {{ year }}</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="leaveUsageChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">📈 توزيع الإجازات المستخدمة والمتبقية</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="leaveBalanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- جدول استخدام الإجازات حسب النوع -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">📋 استخدام الإجازات حسب النوع - {{ year }}</h5>
+    </div>
+    <div class="card-body">
+        {% if leave_usage %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>نوع الإجازة</th>
+                        <th>إجمالي الأيام المستخدمة</th>
+                        <th>النسبة من الإجمالي</th>
+                        <th>التقييم</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in leave_usage %}
+                    <tr>
+                        <td><strong>{{ row.leave_type_name }}</strong></td>
+                        <td>{{ row.total_days_used }} يوم</td>
+                        <td>
+                            {% set percentage = (row.total_days_used / total_days_used * 100) if total_days_used > 0 else 0 %}
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                     style="width: {{ percentage }}%">
+                                    {{ "%.1f"|format(percentage) }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if percentage > 40 %}
+                                <span class="badge bg-danger">استخدام عالي</span>
+                            {% elif percentage > 20 %}
+                                <span class="badge bg-warning">استخدام متوسط</span>
+                            {% else %}
+                                <span class="badge bg-success">استخدام منخفض</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i>
+            لا توجد بيانات استخدام إجازات للسنة المحددة
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- جدول تفاصيل الإجازات للموظفين -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">📝 تفاصيل الإجازات للموظفين - {{ year }}</h5>
+    </div>
+    <div class="card-body">
+        {% if leave_summary %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="leaveSummaryTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>اسم الموظف</th>
+                        <th>نوع الإجازة</th>
+                        <th>الأيام المخصصة</th>
+                        <th>الأيام المستخدمة</th>
+                        <th>الأيام المتبقية</th>
+                        <th>نسبة الاستخدام</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in leave_summary %}
+                    <tr>
+                        <td>{{ row.employee_name }}</td>
+                        <td>{{ row.leave_type_name }}</td>
+                        <td>{{ row.days_allocated }}</td>
+                        <td>{{ row.days_used }}</td>
+                        <td>{{ row.days_remaining }}</td>
+                        <td>
+                            {% set usage_percentage = (row.days_used / row.days_allocated * 100) if row.days_allocated > 0 else 0 %}
+                            <div class="progress" style="height: 20px;">
+                                {% if usage_percentage > 80 %}
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ usage_percentage }}%">
+                                {% elif usage_percentage > 50 %}
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ usage_percentage }}%">
+                                {% else %}
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ usage_percentage }}%">
+                                {% endif %}
+                                    {{ "%.0f"|format(usage_percentage) }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if row.days_remaining == 0 %}
+                                <span class="badge bg-danger">مستنفد</span>
+                            {% elif row.days_remaining <= 2 %}
+                                <span class="badge bg-warning">قريب من النفاد</span>
+                            {% else %}
+                                <span class="badge bg-success">متاح</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i>
+            لا توجد تفاصيل إجازات للسنة المحددة
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- تحليلات إضافية -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">💡 تحليلات وتوصيات</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% if leave_usage %}
+                    <li class="mb-2">
+                        <i class="fas fa-chart-line text-primary"></i>
+                        <strong>الإجازة الأكثر استخداماً:</strong> {{ most_used_leave.leave_type_name }} ({{ most_used_leave.total_days_used }} يوم)
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                        <strong>متوسط الاستخدام:</strong> {{ "%.1f"|format(total_days_used / leave_usage|length) }} يوم لكل نوع إجازة
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-success"></i>
+                        <strong>توصية:</strong> مراجعة سياسات الإجازات للأنواع عالية الاستخدام
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">⚠️ تنبيهات</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% set employees_with_low_balance = leave_summary|selectattr('days_remaining', '<=', 2)|list %}
+                    {% if employees_with_low_balance %}
+                    <li class="mb-2">
+                        <i class="fas fa-exclamation-circle text-danger"></i>
+                        <strong>{{ employees_with_low_balance|length }} موظف</strong> لديهم رصيد إجازات منخفض
+                    </li>
+                    {% endif %}
+                    
+                    {% set employees_with_no_balance = leave_summary|selectattr('days_remaining', '==', 0)|list %}
+                    {% if employees_with_no_balance %}
+                    <li class="mb-2">
+                        <i class="fas fa-times-circle text-danger"></i>
+                        <strong>{{ employees_with_no_balance|length }} موظف</strong> استنفدوا رصيد إجازاتهم
+                    </li>
+                    {% endif %}
+                    
+                    <li class="mb-2">
+                        <i class="fas fa-info-circle text-info"></i>
+                        <strong>نصيحة:</strong> تذكير الموظفين بأرصدة إجازاتهم المتبقية
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- تضمين Chart.js و DataTables -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // إنشاء الرسوم البيانية
+    createLeaveUsageChart();
+    createLeaveBalanceChart();
+    
+    // تفعيل DataTables
+    $('#leaveSummaryTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/ar.json'
+        },
+        pageLength: 25,
+        order: [[0, 'asc']] // ترتيب حسب اسم الموظف
+    });
+});
+
+function createLeaveUsageChart() {
+    const ctx = document.getElementById('leaveUsageChart').getContext('2d');
+    
+    // بيانات من الخادم
+    const leaveUsageData = {{ leave_usage|tojson }};
+    
+    const labels = leaveUsageData.map(item => item.leave_type_name);
+    const data = leaveUsageData.map(item => item.total_days_used);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'الأيام المستخدمة',
+                data: data,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' يوم';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createLeaveBalanceChart() {
+    const ctx = document.getElementById('leaveBalanceChart').getContext('2d');
+    
+    // حساب إجمالي الأيام المخصصة والمستخدمة والمتبقية
+    const leaveSummaryData = {{ leave_summary|tojson }};
+    
+    const totalAllocated = leaveSummaryData.reduce((sum, item) => sum + item.days_allocated, 0);
+    const totalUsed = leaveSummaryData.reduce((sum, item) => sum + item.days_used, 0);
+    const totalRemaining = leaveSummaryData.reduce((sum, item) => sum + item.days_remaining, 0);
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['الأيام المستخدمة', 'الأيام المتبقية'],
+            datasets: [{
+                data: [totalUsed, totalRemaining],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(75, 192, 192, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+</script>
+
+<!-- Font Awesome للأيقونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+

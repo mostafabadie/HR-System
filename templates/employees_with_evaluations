@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}الموظفون الذين تم تقييمهم | نظام الموارد البشرية{% endblock %}
+
+{% block content %}
+<style>
+    .page-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .page-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+    }
+    .page-subtitle {
+        margin: 0.25rem 0 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    .card-table {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .table-employees {
+        margin: 0;
+    }
+    .table-employees thead th {
+        background: #0f172a;
+        color: #e5e7eb;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.9rem 0.75rem;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+    .table-employees tbody td {
+        padding: 0.8rem 0.75rem;
+        vertical-align: middle;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.9rem;
+    }
+    .table-employees tbody tr:hover {
+        background: #f8fafc;
+    }
+    .badge-count {
+        background: #ecfdf5;
+        color: #047857;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .btn-history {
+        background: #e0f2fe;
+        color: #0369a1;
+        border-radius: 999px;
+        padding: 0.3rem 0.85rem;
+        font-size: 0.8rem;
+        text-decoration: none;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .btn-history:hover {
+        background: #bfdbfe;
+        color: #0369a1;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: #64748b;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1>الموظفون الذين تم تقييمهم</h1>
+        <p class="page-subtitle">
+            عرض جميع الموظفين الذين لديهم تقييم واحد على الأقل عبر أي فترة تقييمية.
+        </p>
+    </div>
+    <a href="{{ url_for('performance_dashboard') }}" class="btn btn-outline-secondary">
+        العودة للوحة الأداء
+    </a>
+</div>
+
+<div class="card-table">
+    {% if employees %}
+    <div class="table-responsive">
+        <table class="table table-employees">
+            <thead>
+                <tr>
+                    <th>الموظف</th>
+                    <th>القسم</th>
+                    <th>الوظيفة</th>
+                    <th>عدد التقييمات</th>
+                    <th>أول سنة تقييم</th>
+                    <th>آخر سنة / ربع</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td><strong>{{ emp.name }}</strong></td>
+                    <td>{{ emp.department or '—' }}</td>
+                    <td>{{ emp.position or '—' }}</td>
+                    <td>
+                        <span class="badge-count">{{ emp.evaluations_count }}</span>
+                    </td>
+                    <td>{{ emp.first_year or '—' }}</td>
+                    <td>
+                        {% if emp.last_year %}
+                            {{ emp.last_year }} / الربع {{ emp.last_quarter }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('employee_performance_history', employee_id=emp.id) }}" class="btn-history">
+                            تاريخ الأداء
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        لا يوجد أي موظف لديه تقييمات حتى الآن.
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+

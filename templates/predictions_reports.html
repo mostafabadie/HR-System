@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}التنبؤات والتحليلات المتقدمة - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>🔮 التنبؤات والتحليلات المتقدمة</h2>
+    <a href="/reports" class="btn btn-secondary">العودة للوحة التقارير</a>
+</div>
+
+<!-- معلومات التنبؤات -->
+<div class="alert alert-info mb-4">
+    <h5><i class="fas fa-info-circle"></i> حول التنبؤات</h5>
+    <p class="mb-0">
+        هذه التنبؤات مبنية على تحليل البيانات التاريخية للـ 6 أشهر الماضية. 
+        النتائج تقديرية وتهدف لمساعدة الإدارة في التخطيط المستقبلي.
+    </p>
+</div>
+
+<!-- تنبؤات الغياب -->
+<div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">📊 تنبؤات الغياب للموظفين (الـ 3 أشهر القادمة)</h5>
+    </div>
+    <div class="card-body">
+        {% if absenteeism_predictions %}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <canvas id="absenteeismPredictionChart" width="400" height="200"></canvas>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6>📈 إحصائيات التنبؤ</h6>
+                        {% set total_predicted_absences = absenteeism_predictions|sum(attribute='predicted_absences_next_months') %}
+                        {% set avg_predicted_absences = total_predicted_absences / absenteeism_predictions|length %}
+                        {% set max_predicted = absenteeism_predictions|max(attribute='predicted_absences_next_months') %}
+                        {% set min_predicted = absenteeism_predictions|min(attribute='predicted_absences_next_months') %}
+                        
+                        <ul class="list-unstyled">
+                            <li><strong>إجمالي الغياب المتوقع:</strong> {{ "%.1f"|format(total_predicted_absences) }} يوم</li>
+                            <li><strong>متوسط الغياب للموظف:</strong> {{ "%.1f"|format(avg_predicted_absences) }} يوم</li>
+                            <li><strong>أعلى توقع:</strong> {{ "%.1f"|format(max_predicted.predicted_absences_next_months) }} يوم</li>
+                            <li><strong>أقل توقع:</strong> {{ "%.1f"|format(min_predicted.predicted_absences_next_months) }} يوم</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>اسم الموظف</th>
+                        <th>الغياب المتوقع (3 أشهر)</th>
+                        <th>المستوى</th>
+                        <th>التوصية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction in absenteeism_predictions %}
+                    <tr>
+                        <td>{{ prediction.employee_name }}</td>
+                        <td>{{ "%.1f"|format(prediction.predicted_absences_next_months) }} يوم</td>
+                        <td>
+                            {% if prediction.predicted_absences_next_months > 5 %}
+                                <span class="badge bg-danger">عالي</span>
+                            {% elif prediction.predicted_absences_next_months > 2 %}
+                                <span class="badge bg-warning">متوسط</span>
+                            {% else %}
+                                <span class="badge bg-success">منخفض</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if prediction.predicted_absences_next_months > 5 %}
+                                <small class="text-danger">مراجعة أسباب الغياب والتدخل المبكر</small>
+                            {% elif prediction.predicted_absences_next_months > 2 %}
+                                <small class="text-warning">متابعة دورية مع الموظف</small>
+                            {% else %}
+                                <small class="text-success">أداء جيد، استمرار المتابعة العادية</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i>
+            لا توجد بيانات كافية لحساب تنبؤات الغياب
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- تنبؤات الإجازات -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">🏖️ تنبؤات الطلب على الإجازات (الـ 3 أشهر القادمة)</h5>
+    </div>
+    <div class="card-body">
+        {% if leave_predictions %}
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <canvas id="leaveDemandPredictionChart" width="400" height="200"></canvas>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6>📈 إحصائيات التنبؤ</h6>
+                        {% set total_predicted_demand = leave_predictions|sum(attribute='predicted_demand_next_months') %}
+                        {% set avg_predicted_demand = total_predicted_demand / leave_predictions|length %}
+                        {% set max_demand_prediction = leave_predictions|max(attribute='predicted_demand_next_months') %}
+                        {% set min_demand_prediction = leave_predictions|min(attribute='predicted_demand_next_months') %}
+                        
+                        <ul class="list-unstyled">
+                            <li><strong>إجمالي الطلب المتوقع:</strong> {{ "%.1f"|format(total_predicted_demand) }} يوم</li>
+                            <li><strong>متوسط الطلب لكل نوع:</strong> {{ "%.1f"|format(avg_predicted_demand) }} يوم</li>
+                            <li><strong>أعلى طلب متوقع:</strong> {{ max_demand_prediction.leave_type_name }}</li>
+                            <li><strong>أقل طلب متوقع:</strong> {{ min_demand_prediction.leave_type_name }}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>نوع الإجازة</th>
+                        <th>الطلب المتوقع (3 أشهر)</th>
+                        <th>مستوى الطلب</th>
+                        <th>التوصية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction in leave_predictions %}
+                    <tr>
+                        <td>{{ prediction.leave_type_name }}</td>
+                        <td>{{ "%.1f"|format(prediction.predicted_demand_next_months) }} يوم</td>
+                        <td>
+                            {% if prediction.predicted_demand_next_months > 20 %}
+                                <span class="badge bg-danger">عالي جداً</span>
+                            {% elif prediction.predicted_demand_next_months > 10 %}
+                                <span class="badge bg-warning">عالي</span>
+                            {% elif prediction.predicted_demand_next_months > 5 %}
+                                <span class="badge bg-info">متوسط</span>
+                            {% else %}
+                                <span class="badge bg-success">منخفض</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if prediction.predicted_demand_next_months > 20 %}
+                                <small class="text-danger">تأكد من توفر الموارد البديلة</small>
+                            {% elif prediction.predicted_demand_next_months > 10 %}
+                                <small class="text-warning">خطط لتوزيع العمل مسبقاً</small>
+                            {% elif prediction.predicted_demand_next_months > 5 %}
+                                <small class="text-info">متابعة عادية مع التخطيط المسبق</small>
+                            {% else %}
+                                <small class="text-success">لا يتطلب إجراءات خاصة</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i>
+            لا توجد بيانات كافية لحساب تنبؤات الطلب على الإجازات
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- تحليلات إضافية وتوصيات -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">💡 تحليلات ذكية</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    {% if absenteeism_predictions and leave_predictions %}
+                    <li class="mb-2">
+                        <i class="fas fa-chart-line text-primary"></i>
+                        <strong>اتجاه الغياب:</strong> 
+                        {% if avg_predicted_absences > 3 %}
+                            متزايد - يتطلب تدخل
+                        {% elif avg_predicted_absences > 1 %}
+                            مستقر - متابعة عادية
+                        {% else %}
+                            منخفض - أداء ممتاز
+                        {% endif %}
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-calendar-alt text-info"></i>
+                        <strong>ذروة الإجازات:</strong> {{ max_demand_prediction.leave_type_name }}
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning"></i>
+                        <strong>نصيحة:</strong> خطط للموارد البديلة خلال فترات الذروة
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">📋 خطة العمل المقترحة</h6>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">مراجعة الموظفين ذوي التوقعات العالية للغياب</li>
+                    <li class="mb-2">تحديد الموارد البديلة للفترات عالية الطلب</li>
+                    <li class="mb-2">وضع خطط طوارئ لتغطية النقص المتوقع</li>
+                    <li class="mb-2">مراجعة سياسات الإجازات حسب الحاجة</li>
+                    <li class="mb-0">تحديث التنبؤات شهرياً بناءً على البيانات الجديدة</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- معلومات إضافية -->
+<div class="alert alert-secondary mt-4">
+    <h6><i class="fas fa-cog"></i> معلومات تقنية</h6>
+    <p class="mb-0">
+        <strong>نموذج التنبؤ:</strong> متوسط متحرك بسيط بناءً على بيانات الـ 6 أشهر الماضية<br>
+        <strong>دقة التنبؤ:</strong> تقديرية (يُنصح بمراجعة النتائج مع البيانات الفعلية)<br>
+        <strong>آخر تحديث:</strong> {{ moment().format('YYYY-MM-DD HH:mm') }}
+    </p>
+</div>
+
+<!-- تضمين Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // إنشاء الرسوم البيانية
+    createAbsenteeismPredictionChart();
+    createLeaveDemandPredictionChart();
+});
+
+function createAbsenteeismPredictionChart() {
+    const ctx = document.getElementById('absenteeismPredictionChart').getContext('2d');
+    
+    // بيانات من الخادم
+    const absenteeismData = {{ absenteeism_predictions|tojson }};
+    
+    const labels = absenteeismData.map(item => item.employee_name);
+    const data = absenteeismData.map(item => item.predicted_absences_next_months);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'الغياب المتوقع (أيام)',
+                data: data,
+                backgroundColor: data.map(value => {
+                    if (value > 5) return 'rgba(255, 99, 132, 0.8)';
+                    if (value > 2) return 'rgba(255, 205, 86, 0.8)';
+                    return 'rgba(75, 192, 192, 0.8)';
+                }),
+                borderColor: data.map(value => {
+                    if (value > 5) return 'rgba(255, 99, 132, 1)';
+                    if (value > 2) return 'rgba(255, 205, 86, 1)';
+                    return 'rgba(75, 192, 192, 1)';
+                }),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' يوم';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createLeaveDemandPredictionChart() {
+    const ctx = document.getElementById('leaveDemandPredictionChart').getContext('2d');
+    
+    // بيانات من الخادم
+    const leaveDemandData = {{ leave_predictions|tojson }};
+    
+    const labels = leaveDemandData.map(item => item.leave_type_name);
+    const data = leaveDemandData.map(item => item.predicted_demand_next_months);
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 205, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+</script>
+
+<!-- Font Awesome للأيقونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تقارير الأداء</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            margin-bottom: 20px;
+        }
+        table, th, td { border: 1px solid #ccc; }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th { background-color: #f2f2f2; }
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+        .form-section {
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        input[type="submit"] {
+            padding: 8px 12px;
+            background: #28a745;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>📊 تقارير الأداء</h1>
+
+    <!-- اختيار الفترة -->
+    <div class="form-section">
+        <form method="get">
+            <label>اختر الفترة:</label>
+            <select name="period_id">
+                {% for p in periods %}
+                    <option value="{{ p.id }}" {% if selected_period_id == p.id %}selected{% endif %}>
+                        {{ p.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="عرض">
+        </form>
+    </div>
+
+    {% if stats %}
+        <h2>إحصائيات الفترة</h2>
+        <table>
+            <tr>
+                <th>المعيار</th>
+                <th>القيمة</th>
+            </tr>
+            {% for stat in stats %}
+            <tr>
+                <td>{{ stat.name }}</td>
+                <td>{{ stat.value }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>⚠ لا توجد إحصائيات لعرضها لهذه الفترة.</p>
+    {% endif %}
+
+    {% if criteria_analysis %}
+        <h2>تحليل الأداء حسب المعايير</h2>
+        <table>
+            <tr>
+                <th>المعيار</th>
+                <th>متوسط التقييم</th>
+                <th>عدد التقييمات</th>
+            </tr>
+            {% for c in criteria_analysis %}
+            <tr>
+                <td>{{ c.criteria_name }}</td>
+                <td>{{ "%.2f"|format(c.average_score) }}</td>
+                <td>{{ c.total_count }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+</div>
+</body>
+</html>

@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}تفاصيل التقييم - {{ evaluation_data.evaluation.employee_name }} - نظام إدارة الموارد البشرية{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📄 تفاصيل التقييم</h2>
+    <div>
+        <a href="/performance/employee/{{ evaluation_data.evaluation.employee_id }}/history" class="btn btn-info me-2">
+            <i class="fas fa-history"></i> تاريخ الأداء
+        </a>
+        {% if evaluation_data.evaluation.status == 'draft' %}
+        <a href="/performance/evaluate/{{ evaluation_data.evaluation.employee_id }}?period_id={{ evaluation_data.evaluation.period_id }}" class="btn btn-warning me-2">
+            <i class="fas fa-edit"></i> تحرير
+        </a>
+        {% endif %}
+        <a href="/performance/evaluate?period_id={{ evaluation_data.evaluation.period_id }}" class="btn btn-secondary">
+            العودة للقائمة
+        </a>
+    </div>
+</div>
+
+<!-- معلومات أساسية -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">👤 معلومات الموظف</h6>
+            </div>
+            <div class="card-body">
+                <h5><strong>{{ evaluation_data.evaluation.employee_name }}</strong></h5>
+                <p class="mb-1"><strong>المقيم:</strong> {{ evaluation_data.evaluation.evaluator_name }}</p>
+                <p class="mb-0"><strong>الفترة:</strong> {{ evaluation_data.evaluation.period_name }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">⭐ التقييم العام</h6>
+            </div>
+            <div class="card-body text-center">
+                {% if evaluation_data.evaluation.overall_rating %}
+                    {% if evaluation_data.evaluation.overall_rating == 'ممتاز' %}
+                        <h3><span class="badge bg-success fs-4">{{ evaluation_data.evaluation.overall_rating }}</span></h3>
+                    {% elif evaluation_data.evaluation.overall_rating == 'جيد جداً' %}
+                        <h3><span class="badge bg-info fs-4">{{ evaluation_data.evaluation.overall_rating }}</span></h3>
+                    {% elif evaluation_data.evaluation.overall_rating == 'جيد' %}
+                        <h3><span class="badge bg-primary fs-4">{{ evaluation_data.evaluation.overall_rating }}</span></h3>
+                    {% elif evaluation_data.evaluation.overall_rating == 'مقبول' %}
+                        <h3><span class="badge bg-warning fs-4">{{ evaluation_data.evaluation.overall_rating }}</span></h3>
+                    {% else %}
+                        <h3><span class="badge bg-danger fs-4">{{ evaluation_data.evaluation.overall_rating }}</span></h3>
+                    {% endif %}
+                {% else %}
+                    <h3><span class="badge bg-secondary fs-4">غير محدد</span></h3>
+                {% endif %}
+                
+                {% if evaluation_data.evaluation.overall_score %}
+                <p class="mb-0 mt-2">
+                    <strong>{{ "%.1f"|format(evaluation_data.evaluation.overall_score) }}</strong> من 5.0 نقاط
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">📅 معلومات التقييم</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>تاريخ الإنشاء:</strong> {{ evaluation_data.evaluation.created_date[:10] }}</p>
+                {% if evaluation_data.evaluation.completed_date %}
+                <p class="mb-1"><strong>تاريخ الإكمال:</strong> {{ evaluation_data.evaluation.completed_date[:10] }}</p>
+                {% endif %}
+                <p class="mb-0"><strong>الحالة:</strong> 
+                    {% if evaluation_data.evaluation.status == 'completed' %}
+                        <span class="badge bg-success">مكتمل</span>
+                    {% elif evaluation_data.evaluation.status == 'draft' %}
+                        <span class="badge bg-warning">مسودة</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ evaluation_data.evaluation.status }}</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- تفاصيل المعايير -->
+<div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">📊 تفاصيل المعايير</h5>
+    </div>
+    <div class="card-body">
+        {% if evaluation_data.details %}
+        <div class="row">
+            {% for detail in evaluation_data.details %}
+            <div class="col-md-6 mb-4">
+                <div class="border rounded p-3 h-100">
+                    <h6><strong>{{ detail.criteria_name }}</strong></h6>
+                    <p class="text-muted mb-3">{{ detail.criteria_description }}</p>
+                    
+                    <div class="mb-3">
+                        <strong>التقييم:</strong>
+                        {% if detail.rating == 'ممتاز' %}
+                            <span class="badge bg-success ms-2">{{ detail.rating }}</span>
+                        {% elif detail.rating == 'جيد جداً' %}
+                            <span class="badge bg-info ms-2">{{ detail.rating }}</span>
+                        {% elif detail.rating == 'جيد' %}
+                            <span class="badge bg-primary ms-2">{{ detail.rating }}</span>
+                        {% elif detail.rating == 'مقبول' %}
+                            <span class="badge bg-warning ms-2">{{ detail.rating }}</span>
+                        {% else %}
+                            <span class="badge bg-danger ms-2">{{ detail.rating }}</span>
+                        {% endif %}
+                        <small class="text-muted">({{ "%.1f"|format(detail.score) }} نقطة)</small>
+                    </div>
+                    
+                    {% if detail.comments %}
+                    <div>
+                        <strong>التعليقات:</strong>
+                        <p class="mt-2 p-2 bg-light rounded">{{ detail.comments }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle"></i>
+            لا توجد تفاصيل معايير لهذا التقييم
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- التعليقات والملاحظات -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">💪 نقاط القوة</h6>
+            </div>
+            <div class="card-body">
+                {% if evaluation_data.evaluation.strengths %}
+                <p>{{ evaluation_data.evaluation.strengths }}</p>
+                {% else %}
+                <p class="text-muted">لم يتم تحديد نقاط القوة</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">🔧 مجالات التحسين</h6>
+            </div>
+            <div class="card-body">
+                {% if evaluation_data.evaluation.areas_for_improvement %}
+                <p>{{ evaluation_data.evaluation.areas_for_improvement }}</p>
+                {% else %}
+                <p class="text-muted">لم يتم تحديد مجالات التحسين</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">🎯 أهداف الفترة القادمة</h6>
+            </div>
+            <div class="card-body">
+                {% if evaluation_data.evaluation.goals_next_period %}
+                <p>{{ evaluation_data.evaluation.goals_next_period }}</p>
+                {% else %}
+                <p class="text-muted">لم يتم تحديد أهداف للفترة القادمة</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">💬 تعليقات إضافية</h6>
+            </div>
+            <div class="card-body">
+                {% if evaluation_data.evaluation.comments %}
+                <p>{{ evaluation_data.evaluation.comments }}</p>
+                {% else %}
+                <p class="text-muted">لا توجد تعليقات إضافية</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- رسم بياني للمعايير -->
+{% if evaluation_data.details %}
+<div class="card">
+    <div class="card-header">
+        <h6 class="mb-0">📈 رسم بياني للمعايير</h6>
+    </div>
+    <div class="card-body">
+        <canvas id="criteriaChart" width="400" height="200"></canvas>
+    </div>
+</div>
+
+<!-- تضمين Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('criteriaChart').getContext('2d');
+    
+    // بيانات المعايير
+    const criteriaData = {{ evaluation_data.details|tojson }};
+    
+    const labels = criteriaData.map(item => item.criteria_name);
+    const scores = criteriaData.map(item => item.score);
+    
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'النقاط',
+                data: scores,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 5,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+
+<!-- Font Awesome للأيقونات -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.border {
+    border-color: #dee2e6 !important;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.9em;
+}
+
+.bg-light {
+    background-color: #f8f9fa !important;
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}
+
