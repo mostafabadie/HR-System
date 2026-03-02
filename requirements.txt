@@ -14,9 +14,6 @@ matplotlib==3.10.8
 opencv-python==4.8.0.76
 packaging==25.0
 pillow==11.3.0
-pycryptodome==3.23.0
-pydantic==2.11.7
-pydantic_core==2.33.2
 pyparsing==3.2.5
 python-dateutil==2.9.0.post0
 pytz==2025.2
