@@ -952,5 +952,6 @@ def api_criteria_performance_analysis(period_id):
     analysis = get_criteria_performance_analysis(period_id)
     return jsonify([dict(row) for row in analysis])
     
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
