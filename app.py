@@ -31,43 +31,6 @@ ALLOWED_CV_EXTENSIONS = {"pdf", "doc", "docx"}
 
 def allowed_cv_file(filename: str) -> bool:
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_CV_EXTENSIONS
-# ====== إنشاء قاعدة البيانات والجداول تلقائيًا ======
-def init_db():
-    conn = sqlite3.connect('hr_system.db')
-    c = conn.cursor()
-
-    # جدول الموظفين
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS employees (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        department TEXT,
-        position TEXT,
-        salary REAL
-    )
-    ''')
-
-    # جدول الحضور
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS attendance (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        employee_id INTEGER,
-        date TEXT,
-        check_in TEXT,
-        check_out TEXT,
-        FOREIGN KEY(employee_id) REFERENCES employees(id)
-    )
-    ''')
-
-    conn.commit()
-    conn.close()
-
-# تشغيل الإنشاء قبل أي شيء
-init_db()
-
-# باقي الكود الخاص بـ Flask هنا...
-
-app.secret_key = 'secretkey'
 
 def get_db_connection():
     conn = sqlite3.connect('hr.db')

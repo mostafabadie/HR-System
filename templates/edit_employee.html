@@ -10,320 +10,164 @@
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --primary: #0f766e;
-            --primary-light: #14b8a6;
-            --primary-soft: #ccfbf1;
-            --dark: #0f172a;
-            --gray: #64748b;
-            --light: #f8fafc;
-            --border: #e2e8f0;
-            --warning: #f59e0b;
-            --warning-light: #fffbeb;
+    :root{
+        --primary:#0f766e;--primary2:#14b8a6;--dark:#0f172a;
+        --gray:#64748b;--light:#f8fafc;--border:#e2e8f0;
+        --warn:#f59e0b;
         }
-
-        body {
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            padding: 2rem;
+        
+        body{
+        background:linear-gradient(135deg,#f1f5f9,#e2e8f0);
+        font-family:Segoe UI;
+        min-height:100vh;
+        padding:2rem;
         }
-
-        .edit-card {
-            background: white;
-            border-radius: 32px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            overflow: hidden;
-            animation: slideUp 0.5s ease-out;
-            max-width: 900px;
-            margin: 0 auto;
+        
+        /* CARD */
+        .edit-card{
+        max-width:900px;margin:auto;
+        background:#fff;border-radius:28px;
+        box-shadow:0 20px 50px rgba(0,0,0,.15);
+        overflow:hidden;
+        animation:up .4s ease;
         }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes up{from{opacity:0;transform:translateY(25px)}to{opacity:1}}
+        
+        /* HEADER */
+        .card-header{
+        background:linear-gradient(135deg,var(--dark),#1e293b);
+        padding:2rem;color:#fff;
         }
-
-        /* رأس البطاقة */
-        .card-header {
-            background: linear-gradient(135deg, var(--dark), #1e293b);
-            padding: 2rem;
-            border-bottom: none;
+        .card-header h2{
+        display:flex;gap:1rem;align-items:center;
+        font-size:1.8rem;margin:0;
         }
-
-        .card-header h2 {
-            color: white;
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .card-header i{
+        background:rgba(255,255,255,.15);
+        padding:.7rem;border-radius:14px;
         }
-
-        .card-header h2 i {
-            background: rgba(255,255,255,0.2);
-            padding: 0.75rem;
-            border-radius: 20px;
+        
+        /* BODY */
+        .card-body{padding:2rem}
+        
+        /* ALERT */
+        .alert-message{
+        background:#fef3c7;color:#92400e;
+        padding:1rem;border-radius:16px;
+        display:flex;gap:1rem;align-items:center;
+        margin-bottom:1.5rem;
         }
-
-        .employee-badge {
-            background: rgba(255,255,255,0.15);
-            color: white;
-            padding: 0.5rem 1.5rem;
-            border-radius: 50px;
-            display: inline-block;
-            margin-top: 0.75rem;
-            font-size: 0.95rem;
-            border: 1px solid rgba(255,255,255,0.2);
+        
+        /* CURRENT DATA */
+        .current-data{
+        background:var(--light);
+        padding:1.5rem;border-radius:20px;
+        border:1px solid var(--border);
         }
-
-        /* جسم البطاقة */
-        .card-body {
-            padding: 2.5rem;
+        
+        .section-title{
+        display:flex;gap:.6rem;align-items:center;
+        font-weight:700;margin-bottom:1rem;
         }
-
-        /* رسالة التنبيه */
-        .alert-message {
-            background: #fef3c7;
-            border: 1px solid #fde68a;
-            color: #92400e;
-            padding: 1.25rem 1.5rem;
-            border-radius: 20px;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-size: 1rem;
+        
+        .data-grid{
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:1rem;
         }
-
-        .alert-message i {
-            font-size: 1.5rem;
-            color: #d97706;
+        
+        .data-item{
+        background:#fff;
+        padding:1rem;
+        border:1px solid var(--border);
+        border-radius:16px;
+        transition:.2s;
         }
-
-        /* قسم البيانات الحالية */
-        .current-data {
-            background: #f8fafc;
-            border-radius: 24px;
-            padding: 1.75rem;
-            margin-bottom: 2.5rem;
-            border: 1px solid var(--border);
+        .data-item:hover{
+        transform:translateY(-2px);
+        border-color:var(--primary2);
+        box-shadow:0 10px 20px rgba(0,0,0,.08);
         }
-
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: var(--dark);
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--border);
+        
+        .data-label{
+        color:var(--gray);
+        font-size:.85rem;
+        margin-bottom:.3rem;
+        display:flex;gap:.5rem;
         }
-
-        .section-title i {
-            color: var(--primary);
+        
+        .data-value{
+        font-weight:700;
+        color:var(--dark);
+        font-size:1.1rem;
         }
-
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.25rem;
+        
+        /* FORM */
+        .form-group{margin-bottom:1.3rem}
+        
+        .form-control{
+        width:100%;
+        padding:.9rem 1rem;
+        border:2px solid var(--border);
+        border-radius:14px;
+        transition:.2s;
         }
-
-        .data-item {
-            background: white;
-            padding: 1.25rem;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            transition: all 0.2s ease;
+        
+        .form-control:focus{
+        border-color:var(--primary);
+        box-shadow:0 0 0 3px rgba(15,118,110,.1);
+        outline:none;
         }
-
-        .data-item:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary-light);
-            box-shadow: 0 10px 20px -10px rgba(15, 118, 110, 0.2);
+        
+        .form-control.changed{
+        background:#fffbeb;
+        border-color:var(--warn);
         }
-
-        .data-label {
-            color: var(--gray);
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        
+        /* OLD VALUE */
+        .old-value-hint{
+        margin-top:.5rem;
+        font-size:.85rem;
+        color:var(--gray);
+        display:flex;gap:.5rem;
         }
-
-        .data-label i {
-            color: var(--primary);
-            font-size: 0.9rem;
+        
+        /* BUTTONS */
+        .action-buttons{
+        display:flex;gap:1rem;
+        margin-top:2rem;
+        border-top:1px solid var(--border);
+        padding-top:1.5rem;
         }
-
-        .data-value {
-            color: var(--dark);
-            font-weight: 700;
-            font-size: 1.25rem;
-            word-break: break-word;
-            padding-right: 1.5rem;
+        
+        .btn-save{
+        flex:2;
+        background:linear-gradient(135deg,var(--primary),var(--primary2));
+        color:#fff;
+        border:none;
+        padding:1rem;
+        border-radius:14px;
+        font-weight:700;
+        cursor:pointer;
         }
-
-        .data-value i {
-            color: #10b981;
-            margin-left: 0.5rem;
-            font-size: 1rem;
+        
+        .btn-cancel{
+        flex:1;
+        background:#fff;
+        border:2px solid var(--border);
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:var(--gray);
         }
-
-        /* قسم النموذج */
-        .form-section {
-            margin-top: 2rem;
-        }
-
-        .form-section-title {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: var(--dark);
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-section-title i {
-            color: var(--primary);
-            background: var(--primary-soft);
-            padding: 0.5rem;
-            border-radius: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 1.75rem;
-        }
-
-        .form-label {
-            color: var(--dark);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .form-label i {
-            color: var(--primary);
-            width: 20px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 1rem 1.25rem;
-            border: 2px solid var(--border);
-            border-radius: 18px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
-            outline: none;
-        }
-
-        .form-control.changed {
-            border-color: var(--warning);
-            background-color: var(--warning-light);
-        }
-
-        /* تلميح القيمة القديمة */
-        .old-value-hint {
-            margin-top: 0.75rem;
-            padding: 0.75rem 1rem;
-            background: #f8fafc;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            color: var(--gray);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            border: 1px dashed var(--border);
-        }
-
-        .old-value-hint i {
-            color: var(--primary);
-        }
-
-        .old-value-badge {
-            background: white;
-            color: var(--dark);
-            font-weight: 600;
-            padding: 0.25rem 1rem;
-            border-radius: 50px;
-            border: 1px solid var(--border);
-            margin-right: 0.5rem;
-        }
-
-        /* الأزرار */
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 2px solid var(--border);
-        }
-
-        .btn-save {
-            flex: 2;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 18px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(15, 118, 110, 0.3);
-        }
-
-        .btn-cancel {
-            flex: 1;
-            background: white;
-            color: var(--gray);
-            border: 2px solid var(--border);
-            padding: 1rem 2rem;
-            border-radius: 18px;
-            font-weight: 600;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.75rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-cancel:hover {
-            background: #f8fafc;
-            border-color: var(--gray);
-            color: var(--dark);
-        }
-
-        @media (max-width: 768px) {
-            body { padding: 1rem; }
-            .card-body { padding: 1.5rem; }
-            .data-grid { grid-template-columns: 1fr; }
-            .action-buttons { flex-direction: column; }
+        
+        /* RESPONSIVE */
+        @media(max-width:768px){
+        body{padding:1rem}
+        .data-grid{grid-template-columns:1fr}
+        .action-buttons{flex-direction:column}
         }
     </style>
 </head>
